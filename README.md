@@ -13,7 +13,7 @@ CruiseControl is a web application designed to manage a bar crawl event on a cru
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/cruisecontrol.git
+    git clone https://github.com/roshanc/cruisecontrol.git
     cd cruisecontrol
     ```
 
