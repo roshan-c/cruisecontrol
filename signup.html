@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - CruiseControl</title>
+    <!-- Link to External CSS -->
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h2 class="signup-title">Create an Account</h2>
+        <div id="error" class="error"></div>
+        <form id="signupForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit" class="signup-button">Sign Up</button>
+        </form>
+        <div class="login-link">
+            <p>Already have an account? <a href="/login.html">Login</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            try {
+                const response = await fetch('/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include', // Include cookies
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Successful signup
+                    // Redirect to login page
+                    alert('Signup successful! Please login.');
+                    window.location.href = '/login.html';
+                } else {
+                    // Display error message
+                    document.getElementById('error').innerText = data.message || 'Signup failed';
+                }
+            } catch (error) {
+                console.error('Error during signup:', error);
+                document.getElementById('error').innerText = 'An error occurred. Please try again.';
+            }
+        });
+    </script>
+</body>
+</html>

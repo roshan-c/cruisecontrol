@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CruiseControl</title>
+    <!-- Link to External CSS -->
+    <link href="styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <h2 class="login-title">Login</h2>
+        <div id="error" class="error"></div>
+        <form id="loginForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit" class="login-button">Login</button>
+        </form>
+        <div class="signup-link">
+            <p>Don't have an account? <a href="/signup.html">Sign Up</a></p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include', // Include cookies
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Successful login
+                    // Redirect to home page
+                    window.location.href = '/home.html';
+                } else {
+                    // Display error message
+                    document.getElementById('error').innerText = data.message || 'Login failed';
+                }
+            } catch (error) {
+                console.error('Error during login:', error);
+                document.getElementById('error').innerText = 'An error occurred. Please try again.';
+            }
+        });
+    </script>
+</body>
+</html>

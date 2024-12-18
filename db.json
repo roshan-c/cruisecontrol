@@ -1,0 +1,45 @@
+{
+  "currentBarIndex": 0,
+  "users": [
+    {
+      "username": "admin",
+      "password": "adminpassword",
+      "isAdmin": true,
+      "visitedBars": [],
+      "points": 0,
+      "currentGoal": "Order your drink in another language",
+      "completedGoals": []
+    },
+    {
+      "username": "Roshan",
+      "password": "roshanpassword",
+      "isAdmin": false,
+      "visitedBars": [
+      ],
+      "points": 0,
+      "currentGoal": "Order your drink in another language",
+      "completedGoals": []
+    }
+  ],
+  "bars": [
+    "Schooner Bar",
+    "Trellis Bar",
+    "Boleros",
+    "Rising Tide Bar",
+    "Solarium Bar",
+    "Suite Lounge",
+    "Pool Bar & Sand Bar",
+    "Vintages",
+    "English Pub",
+    "Wipe Out Bar",
+    "Dazzles",
+    "Champagne Bar"
+  ],
+  "secondaryGoals": [
+    "Order a drink from the next country we're due to visit",
+    "Down your drink",
+    "Order your drink in another language",
+    "Finish your drink within 10 seconds",
+    "Order a drink with an umbrella"
+  ]
+}
