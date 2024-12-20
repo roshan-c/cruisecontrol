@@ -73,6 +73,71 @@ CruiseControl is a web application designed to manage a bar crawl event on a cru
 - `POST /admin/updatePoints`: Update user points (Admin only).
 - `POST /admin/progressBar`: Progress to the next bar (Admin only).
 
+## History/Backstory
+
+The CruiseControl application was designed to manage a bar crawl event on a cruise. However, one of the challenges faced during the cruise is the lack of reliable Wi-Fi. The cruise staff are also strict about bringing devices like Raspberry Pi on board, as they can be used to circumvent the paywall behind the Wi-Fi.
+
+To overcome this challenge, the idea was to host the site on an old Android phone using Termux. By setting up a personal hotspot on the phone, other devices can connect to it and access the site without needing the ship's Wi-Fi. This solution ensures that everyone can participate in the bar crawl event seamlessly.
+
+## Hosting the Site on an Android Phone Using Termux
+
+To host this site on an old Android phone using Termux and access it via a personal hotspot, follow these steps:
+
+### Step 1: Set up Termux on your Android phone
+1. Install Termux from the Google Play Store.
+2. Open Termux and update the package list:
+   ```sh
+   pkg update
+   ```
+
+### Step 2: Install a web server on Termux
+You can use `lighttpd` or the built-in Python HTTP server. Here are instructions for both:
+
+**Using lighttpd**:
+1. Install `lighttpd`:
+   ```sh
+   pkg install lighttpd
+   ```
+2. Configure `lighttpd` to serve your site. Create a configuration file (`lighttpd.conf`) if needed.
+
+**Using Python HTTP server**:
+1. Install Python (if not already installed):
+   ```sh
+   pkg install python
+   ```
+2. Navigate to the directory containing your site files:
+   ```sh
+   cd /path/to/your/site
+   ```
+3. Start the Python HTTP server:
+   ```sh
+   python3 -m http.server 8080
+   ```
+
+### Step 3: Start the web server
+Start the web server using the chosen method. For example, if using the Python HTTP server:
+```sh
+python3 -m http.server 8080
+```
+
+### Step 4: Connect devices to the personal hotspot
+1. Enable the personal hotspot on your Android phone.
+2. Connect other devices (e.g., family members' phones, tablets) to the hotspot.
+
+### Step 5: Access the site
+1. Find the IP address assigned to your Android phone. You can find this by running:
+   ```sh
+   ifconfig
+   ```
+   Look for the `inet` address under the `wlan0` interface (or similar).
+
+2. On the connected devices, open a web browser and enter the IP address followed by the port number. For example:
+   ```
+   http://192.168.43.1:8080
+   ```
+
+This should allow everyone connected to the personal hotspot to access the site hosted on your Android phone.
+
 ## License
 
 This project is licensed under the MIT License.
