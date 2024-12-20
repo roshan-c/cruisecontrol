@@ -9,7 +9,9 @@ const dbPath = path.join(__dirname, 'db.json');
 
 // Helper Functions
 function getData() {
+    console.log('Reading data from db.json');
     if (!fs.existsSync(dbPath)) {
+        console.log('db.json not found, creating with default data');
         const defaultData = {
             currentBarIndex: 0,
             users: [],
@@ -43,11 +45,14 @@ function getData() {
         fs.writeFileSync(dbPath, JSON.stringify(defaultData, null, 2));
     }
     const data = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
+    console.log('Data read successfully');
     return data;
 }
 
 function saveData(data) {
+    console.log('Saving data to db.json');
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2));
+    console.log('Data saved successfully');
 }
 
 // Middleware to parse JSON and URL-encoded data
@@ -65,17 +70,23 @@ app.use(session({
 
 // Authentication Middleware
 function isAuthenticated(req, res, next) {
+    console.log('Checking if user is authenticated');
     if (req.session.username) {
+        console.log(`User '${req.session.username}' is authenticated`);
         next();
     } else {
+        console.log('User is not authenticated');
         res.status(401).json({ message: 'Unauthorized' });
     }
 }
 
 function isAdmin(req, res, next) {
+    console.log('Checking if user is admin');
     if (req.session.isAdmin) {
+        console.log(`User '${req.session.username}' is admin`);
         next();
     } else {
+        console.log('User is not admin');
         res.status(403).json({ message: 'Forbidden: Admins only' });
     }
 }
@@ -88,6 +99,7 @@ app.post('/signup', async (req, res) => {
     console.log('Received signup attempt:', { username, isAdmin });
 
     if (!username || !password) {
+        console.log('Signup failed: Missing username or password');
         return res.status(400).json({ message: 'Username and password are required' });
     }
 
@@ -95,6 +107,7 @@ app.post('/signup', async (req, res) => {
     const existingUser = data.users.find(user => user.username === username);
 
     if (existingUser) {
+        console.log(`Signup failed: Username '${username}' already exists`);
         return res.status(400).json({ message: 'Username already exists' });
     }
 
@@ -167,15 +180,18 @@ app.post('/logout', isAuthenticated, (req, res) => {
 
 // Home Route
 app.get('/home', isAuthenticated, (req, res) => {
+    console.log('Received request for /home');
     const data = getData();
     const user = data.users.find(u => u.username === req.session.username);
     if (!user) {
+        console.log(`Home request failed: User '${req.session.username}' not found`);
         return res.status(400).json({ message: 'User not found' });
     }
 
     const currentBar = data.bars[data.currentBarIndex] || 'No more bars';
     const nextBar = data.bars[data.currentBarIndex + 1] || 'No more bars';
 
+    console.log(`Home request successful for user '${user.username}'`);
     res.json({
         username: user.username,
         currentBar,
@@ -233,13 +249,16 @@ app.post('/updateBar', isAuthenticated, (req, res) => {
 
 // Complete Goal Route
 app.post('/completeGoal', isAuthenticated, async (req, res) => {
+    console.log('Received request to complete goal');
     const data = getData();
     const user = data.users.find(u => u.username === req.session.username);
     if (!user) {
+        console.log(`Complete goal failed: User '${req.session.username}' not found`);
         return res.status(400).json({ message: 'User not found' });
     }
 
     if (!user.currentGoal) {
+        console.log(`Complete goal failed: No current goal for user '${user.username}'`);
         return res.status(400).json({ message: 'No current goal to complete' });
     }
 
@@ -263,6 +282,7 @@ app.post('/completeGoal', isAuthenticated, async (req, res) => {
 
 // Get All Users (Admin Only)
 app.get('/admin/users', isAuthenticated, isAdmin, (req, res) => {
+    console.log('Admin request to get all users');
     const data = getData();
     const users = data.users.map(user => ({
         username: user.username,
@@ -271,6 +291,7 @@ app.get('/admin/users', isAuthenticated, isAdmin, (req, res) => {
         points: user.points,
         completedGoals: user.completedGoals
     }));
+    console.log('Admin request successful: Returning all users');
     res.json(users);
 });
 
@@ -299,6 +320,7 @@ app.post('/admin/updatePoints', isAuthenticated, isAdmin, (req, res) => {
 
 // Admin Progress to Next Bar (Admin Only)
 app.post('/admin/progressBar', isAuthenticated, isAdmin, (req, res) => {
+    console.log('Admin request to progress to next bar');
     const data = getData();
     if (data.currentBarIndex < data.bars.length - 1) {
         data.currentBarIndex += 1;
