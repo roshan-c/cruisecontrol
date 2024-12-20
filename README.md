@@ -125,18 +125,45 @@ python3 -m http.server 8080
 2. Connect other devices (e.g., family members' phones, tablets) to the hotspot.
 
 ### Step 5: Access the site
-1. Find the IP address assigned to your Android phone. You can find this by running:
-   ```sh
-   ifconfig
-   ```
-   Look for the `inet` address under the `wlan0` interface (or similar).
-
+1. Find the IP address assigned to your device (Android or iPhone) while it is hosting the personal hotspot. You can do this by connecting another device to the hotspot and checking the IP address assigned to the connected device. The IP address of the hosting device is typically the gateway address for the connected device. For example, on a connected device:
+   - On Android: Go to Settings > Wi-Fi, tap on the connected network, and look for the gateway IP address.
+   - On iPhone: Go to Settings > Wi-Fi, tap on the connected network, and look for the router IP address.
 2. On the connected devices, open a web browser and enter the IP address followed by the port number. For example:
    ```
    http://192.168.43.1:8080
    ```
 
-This should allow everyone connected to the personal hotspot to access the site hosted on your Android phone.
+This should allow everyone connected to the personal hotspot to access the site hosted on your device.
+
+## Hosting the Site on an iPhone
+
+To host this site on an iPhone, you can use a web server app available on the App Store. Follow these steps:
+
+### Step 1: Install a web server app
+1. Download and install a web server app such as "Web Server for Chrome" or "KSWEB" from the App Store.
+
+### Step 2: Configure the web server app
+1. Open the web server app and configure it to serve your site files. This usually involves selecting the directory containing your site files and setting the port number (e.g., 8080).
+
+### Step 3: Start the web server
+1. Start the web server within the app.
+
+### Step 4: Enable the personal hotspot
+1. Go to Settings > Personal Hotspot on your iPhone and enable it.
+
+### Step 5: Connect devices to the personal hotspot
+1. Connect other devices (e.g., family members' phones, tablets) to the hotspot.
+
+### Step 6: Access the site
+1. Find the IP address assigned to your iPhone. You can do this by connecting another device to the hotspot and checking the IP address assigned to the connected device. The IP address of the hosting device is typically the gateway address for the connected device. For example, on a connected device:
+   - On Android: Go to Settings > Wi-Fi, tap on the connected network, and look for the gateway IP address.
+   - On iPhone: Go to Settings > Wi-Fi, tap on the connected network, and look for the router IP address.
+2. On the connected devices, open a web browser and enter the IP address followed by the port number. For example:
+   ```
+   http://192.168.43.1:8080
+   ```
+
+This should allow everyone connected to the personal hotspot to access the site hosted on your device.
 
 ## License
 
