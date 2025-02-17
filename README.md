@@ -152,5 +152,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📧 Contact
 
-Your Name - [@r09han](https://twitter.com/r09han)
-Project Link: [https://github.com/roshan-c/cruisecontrol](https://github.com/roshan-c/cruisecontrol)
+- My Twitter - [@r09han](https://twitter.com/r09han)
