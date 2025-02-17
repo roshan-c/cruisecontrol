@@ -11,10 +11,6 @@ A modern, Spotify-inspired bar crawl tracking application designed specifically 
 - **Admin Controls**: Manage users and control bar progression
 - **Offline-First**: Works through local network, no ship Wi-Fi needed
 
-## 📱 Screenshots
-
-(Add screenshots of your application here)
-
 ## 🚀 Quick Start
 
 1. Clone the repository:
