@@ -44,7 +44,7 @@ pkg install nodejs
 
 3. Clone and set up the application:
 ```bash
-git clone https://github.com/yourusername/cruisecontrol.git
+git clone https://github.com/roshan-c/cruisecontrol.git
 cd cruisecontrol
 npm install
 ```
