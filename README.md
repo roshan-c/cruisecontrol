@@ -1,126 +1,160 @@
-# CruiseControl
+# 🍺 CruiseControl
 
-CruiseControl is a web application designed to manage a bar crawl event on a cruise. Users can sign up, log in, and track their progress through various bars and secondary goals. Admins have additional functionalities to manage users and progress the bar crawl.
+A modern, Spotify-inspired bar crawl tracking application designed specifically for cruise ships. Keep track of your bar-hopping journey, complete challenges, and compete with friends - all without relying on the ship's Wi-Fi.
 
-## Features
+## 🌟 Features
 
-- User Signup and Login
-- Track visited bars and points
-- Assign and complete secondary goals
-- Admin functionalities to manage users and progress the bar crawl
+- **Modern UI**: Spotify-inspired dark theme with mobile-first design
+- **Bar Tracking**: Check off bars as you visit them and earn points
+- **Secondary Goals**: Complete random challenges for bonus points
+- **Leaderboard**: Compete with other participants
+- **Admin Controls**: Manage users and control bar progression
+- **Offline-First**: Works through local network, no ship Wi-Fi needed
 
-## Installation
+## 📱 Screenshots
+
+(Add screenshots of your application here)
+
+## 🚀 Quick Start
 
 1. Clone the repository:
-    ```sh
-    git clone https://github.com/roshan-c/cruisecontrol.git
-    cd cruisecontrol
-    ```
-
-2. Install dependencies:
-    ```sh
-    npm install
-    ```
-
-3. Start the server:
-    ```sh
-    npm start
-    ```
-
-4. Open your browser and navigate to `http://localhost:3000`.
-
-## History/Backstory
-
-The CruiseControl application was designed to manage a bar crawl event on a cruise. However, one of the challenges faced during the cruise is the lack of reliable Wi-Fi. The cruise staff are also strict about bringing devices like Raspberry Pi on board, as they can be used to circumvent the paywall behind the Wi-Fi.
-
-To overcome this challenge, the idea was to host the site on an old Android phone using Termux. By setting up a personal hotspot on the phone, other devices can connect to it and access the site without needing the ship's Wi-Fi. This solution ensures that everyone can participate in the bar crawl event seamlessly.
-
-## Hosting the Site on an Android Phone Using Termux
-
-To host this site on an old Android phone using Termux and access it via a personal hotspot, follow these steps:
-
-### Step 1: Set up Termux on your Android phone
-1. Install Termux from the Google Play Store.
-2. Open Termux and update the package list:
-   ```sh
-   pkg update
-   ```
-
-### Step 2: Install a web server on Termux
-You can use `lighttpd` or the built-in Python HTTP server. Here are instructions for both:
-
-**Using lighttpd**:
-1. Install `lighttpd`:
-   ```sh
-   pkg install lighttpd
-   ```
-2. Configure `lighttpd` to serve your site. Create a configuration file (`lighttpd.conf`) if needed.
-
-**Using Python HTTP server**:
-1. Install Python (if not already installed):
-   ```sh
-   pkg install python
-   ```
-2. Navigate to the directory containing your site files:
-   ```sh
-   cd /path/to/your/site
-   ```
-3. Start the Python HTTP server:
-   ```sh
-   python3 -m http.server 8080
-   ```
-
-### Step 3: Start the web server
-Start the web server using the chosen method. For example, if using the Python HTTP server:
-```sh
-python3 -m http.server 8080
+```bash
+git clone https://github.com/roshan-c/cruisecontrol.git
+cd cruisecontrol
 ```
 
-### Step 4: Connect devices to the personal hotspot
-1. Enable the personal hotspot on your Android phone.
-2. Connect other devices (e.g., family members' phones, tablets) to the hotspot.
+2. Install dependencies:
+```bash
+npm install
+```
 
-### Step 5: Access the site
-1. Find the IP address assigned to your device (Android or iPhone) while it is hosting the personal hotspot. You can do this by connecting another device to the hotspot and checking the IP address assigned to the connected device. The IP address of the hosting device is typically the gateway address for the connected device. For example, on a connected device:
-   - On Android: Go to Settings > Wi-Fi, tap on the connected network, and look for the gateway IP address.
-   - On iPhone: Go to Settings > Wi-Fi, tap on the connected network, and look for the router IP address.
-2. On the connected devices, open a web browser and enter the IP address followed by the port number. For example:
-   ```
-   http://192.168.43.1:8080
-   ```
+3. Start the server:
+```bash
+npm start
+```
 
-This should allow everyone connected to the personal hotspot to access the site hosted on your device.
+4. Access the application at `http://localhost:3000`
 
-## Hosting the Site on an iPhone
+## 🛳️ Cruise Ship Deployment
 
-To host this site on an iPhone, you can use a web server app available on the App Store. Follow these steps:
+### Method 1: Using Android Phone with Termux
 
-### Step 1: Install a web server app
-1. Download and install a web server app such as "Web Server for Chrome" or "KSWEB" from the App Store.
+1. Install Termux from F-Droid (preferred) or Google Play Store
+2. Set up Node.js environment in Termux:
+```bash
+pkg update
+pkg install nodejs
+```
 
-### Step 2: Configure the web server app
-1. Open the web server app and configure it to serve your site files. This usually involves selecting the directory containing your site files and setting the port number (e.g., 8080).
+3. Clone and set up the application:
+```bash
+git clone https://github.com/yourusername/cruisecontrol.git
+cd cruisecontrol
+npm install
+```
 
-### Step 3: Start the web server
-1. Start the web server within the app.
+4. Start the server:
+```bash
+npm start
+```
 
-### Step 4: Enable the personal hotspot
-1. Go to Settings > Personal Hotspot on your iPhone and enable it.
+5. Enable phone's hotspot
+6. Connect other devices to the hotspot
+7. Access the app using the phone's hotspot IP (usually `192.168.43.1:3000`)
 
-### Step 5: Connect devices to the personal hotspot
-1. Connect other devices (e.g., family members' phones, tablets) to the hotspot.
+### Method 2: Using iPhone
 
-### Step 6: Access the site
-1. Find the IP address assigned to your iPhone. You can do this by connecting another device to the hotspot and checking the IP address assigned to the connected device. The IP address of the hosting device is typically the gateway address for the connected device. For example, on a connected device:
-   - On Android: Go to Settings > Wi-Fi, tap on the connected network, and look for the gateway IP address.
-   - On iPhone: Go to Settings > Wi-Fi, tap on the connected network, and look for the router IP address.
-2. On the connected devices, open a web browser and enter the IP address followed by the port number. For example:
-   ```
-   http://192.168.43.1:8080
-   ```
+1. Install a Node.js server app from the App Store (like "Server for Node")
+2. Import the project files
+3. Start the server through the app
+4. Enable personal hotspot
+5. Connect other devices to the hotspot
+6. Access using the iPhone's hotspot IP address
 
-This should allow everyone connected to the personal hotspot to access the site hosted on your device.
+## 💻 Development
 
-## License
+### Prerequisites
 
-This project is licensed under the MIT License.
+- Node.js (v14 or higher)
+- npm (v6 or higher)
+
+### Environment Setup
+
+1. Fork and clone the repository
+2. Install dependencies: `npm install`
+3. Start development server: `npm run dev`
+
+### Project Structure
+
+```
+cruisecontrol/
+├── config/             # Configuration files
+│   └── db.json        # JSON database file
+├── middleware/        # Express middleware
+│   └── auth.js       # Authentication middleware
+├── models/           # Data models
+│   └── db.js        # Database operations
+├── public/          # Static files
+│   ├── css/        # Stylesheets
+│   └── js/         # Client-side JavaScript
+├── routes/         # Express routes
+│   ├── admin.js   # Admin routes
+│   ├── auth.js    # Authentication routes
+│   └── user.js    # User routes
+├── views/         # HTML templates
+│   ├── admin.html
+│   ├── home.html
+│   ├── index.html
+│   ├── login.html
+│   └── signup.html
+├── package.json
+├── README.md
+└── server.js      # Application entry point
+```
+
+## 🎯 Features in Detail
+
+### User Features
+- Account creation and authentication
+- Bar visit tracking with points
+- Secondary goals/challenges
+- Real-time point updates
+- Mobile-responsive interface
+
+### Admin Features
+- User management
+- Point adjustment
+- Bar progression control
+- Goal assignment
+
+## 🎨 UI/UX
+
+- Spotify-inspired dark theme
+- Mobile-first responsive design
+- Smooth animations and transitions
+- Intuitive navigation
+- Clear visual feedback
+
+## 🔒 Security Notes
+
+- This is a local network application
+- Uses basic session-based authentication
+- Passwords are stored in plaintext (suitable for casual use)
+- For enhanced security in production:
+  - Implement password hashing
+  - Add HTTPS
+  - Implement rate limiting
+  - Add input validation
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgments
+
+- My Dad for giving me the idea
+
+## 📧 Contact
+
+Your Name - [@r09han](https://twitter.com/r09han)
+Project Link: [https://github.com/roshan-c/cruisecontrol](https://github.com/roshan-c/cruisecontrol)

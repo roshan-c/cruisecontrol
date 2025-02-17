@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - CruiseControl</title>
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel</h1>
+        
+        <div class="card">
+            <h2>User Management</h2>
+            <div class="table-responsive">
+                <table id="usersTable" class="bar-list">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Admin</th>
+                            <th>Points</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Users will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Bar Control</h2>
+            <button class="btn" onclick="progressBar()">Advance to Next Bar</button>
+            <p id="progressStatus" class="status-message"></p>
+        </div>
+
+        <button class="btn btn-secondary" onclick="logout()">Back to Home</button>
+    </div>
+
+    <style>
+        /* Additional styles specific to admin page */
+        .table-responsive {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--spotify-white);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--spotify-dark-gray);
+        }
+
+        th {
+            font-weight: 700;
+            color: var(--spotify-light-gray);
+        }
+
+        .status-message {
+            margin-top: 16px;
+            color: var(--spotify-green);
+        }
+
+        .edit-points {
+            width: 80px;
+            padding: 4px 8px;
+            background-color: var(--spotify-dark-gray);
+            border: 1px solid var(--spotify-light-gray);
+            border-radius: 4px;
+            color: var(--spotify-white);
+            margin-right: 8px;
+        }
+
+        @media (max-width: 767px) {
+            th, td {
+                padding: 8px;
+            }
+
+            .edit-points {
+                width: 60px;
+            }
+        }
+    </style>
+
+    <script>
+        // Fetch all users
+        async function fetchUsers() {
+            try {
+                const response = await fetch('/admin/users', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (response.status === 401) {
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                if (response.status === 403) {
+                    alert('Forbidden: Admins only');
+                    window.location.href = '/home.html';
+                    return;
+                }
+
+                const users = await response.json();
+                populateUsersTable(users);
+            } catch (error) {
+                console.error('Error fetching users:', error);
+            }
+        }
+
+        // Populate users table
+        function populateUsersTable(users) {
+            const tbody = document.querySelector('#usersTable tbody');
+            tbody.innerHTML = '';
+
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.className = 'bar-item';
+
+                tr.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.isAdmin ? 'Yes' : 'No'}</td>
+                    <td>${user.points}</td>
+                    <td>
+                        <input type="number" class="edit-points" value="${user.points}" 
+                               min="0" aria-label="Edit points">
+                        <button class="btn btn-secondary" 
+                                onclick="editPoints('${user.username}', this.previousElementSibling.value)">
+                            Update
+                        </button>
+                    </td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Edit Points Function
+        async function editPoints(username, points) {
+            const newPoints = parseInt(points, 10);
+            if (isNaN(newPoints)) {
+                alert('Please enter a valid number.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/updatePoints', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ username, points: newPoints })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message);
+                    fetchUsers();
+                } else {
+                    alert(data.message || 'Failed to update points.');
+                }
+            } catch (error) {
+                console.error('Error updating points:', error);
+                alert('An error occurred. Please try again.');
+            }
+        }
+
+        // Progress Bar Function
+        async function progressBar() {
+            try {
+                const response = await fetch('/admin/progressBar', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                const statusElement = document.getElementById('progressStatus');
+
+                if (response.ok) {
+                    statusElement.textContent = data.message;
+                    statusElement.style.color = 'var(--spotify-green)';
+                    fetchUsers();
+                } else {
+                    statusElement.textContent = data.message || 'Progress failed.';
+                    statusElement.style.color = '#ff4b4b';
+                }
+            } catch (error) {
+                console.error('Error progressing bar:', error);
+                alert('An error occurred. Please try again.');
+            }
+        }
+
+        // Logout Function
+        function logout() {
+            window.location.href = '/home.html';
+        }
+
+        // Initialize
+        fetchUsers();
+    </script>
+</body>
+</html>

@@ -14,8 +14,7 @@
       "username": "Roshan",
       "password": "roshanpassword",
       "isAdmin": false,
-      "visitedBars": [
-      ],
+      "visitedBars": [],
       "points": 0,
       "currentGoal": "Order your drink in another language",
       "completedGoals": []
