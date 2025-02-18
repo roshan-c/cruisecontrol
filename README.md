@@ -11,10 +11,6 @@ A modern, Spotify-inspired bar crawl tracking application designed specifically 
 - **Admin Controls**: Manage users and control bar progression
 - **Offline-First**: Works through local network, no ship Wi-Fi needed
 
-## 📱 Screenshots
-
-(Add screenshots of your application here)
-
 ## 🚀 Quick Start
 
 1. Clone the repository:
@@ -48,7 +44,7 @@ pkg install nodejs
 
 3. Clone and set up the application:
 ```bash
-git clone https://github.com/yourusername/cruisecontrol.git
+git clone https://github.com/roshan-c/cruisecontrol.git
 cd cruisecontrol
 npm install
 ```
@@ -156,5 +152,4 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 📧 Contact
 
-Your Name - [@r09han](https://twitter.com/r09han)
-Project Link: [https://github.com/roshan-c/cruisecontrol](https://github.com/roshan-c/cruisecontrol)
+- My Twitter - [@r09han](https://twitter.com/r09han)
