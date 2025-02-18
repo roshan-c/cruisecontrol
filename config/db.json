@@ -21,24 +21,47 @@
     }
   ],
   "bars": [
-    "Schooner Bar",
-    "Trellis Bar",
-    "Boleros",
-    "Rising Tide Bar",
-    "Solarium Bar",
-    "Suite Lounge",
-    "Pool Bar & Sand Bar",
-    "Vintages",
-    "English Pub",
-    "Wipe Out Bar",
-    "Dazzles",
-    "Champagne Bar"
+    {
+      "name": "Postern Gate"
+    },
+    {
+      "name": "Stone Roses"
+    },
+    {
+      "name": "Yates"
+    },
+    {
+      "name": "Lowthers"
+    },
+    {
+      "name": "Old Bank"
+    },
+    {
+      "name": "Tank and Paddle"
+    },
+    {
+      "name": "Slug and Lettuce"
+    },
+    {
+      "name": "Stonebow"
+    },
+    {
+      "name": "Golden Fleece"
+    },
+    {
+      "name": "Brew York"
+    }
   ],
   "secondaryGoals": [
-    "Order a drink from the next country we're due to visit",
-    "Down your drink",
-    "Order your drink in another language",
-    "Finish your drink within 10 seconds",
-    "Order a drink with an umbrella"
+    { "name": "Take a shot out of Roshan's mystery flask" },
+    { "name": "Down your drink" },
+    { "name": "Order your drink in another language" },
+    { "name": "Finish your drink within 10 seconds" },
+    { "name": "Order a drink that is the opposite colour of your shirt" },
+    { "name": "Order a drink that is the same colour as your shirt" },
+    { "name": "Take a selfie with the bartender" },
+    { "name": "Ask the bar staff if they know who John Pork is" },
+    { "name": "Ask the bar staff for a random fact" },
+    { "name": "Ask someone on a date and exchange contact info" }
   ]
 }

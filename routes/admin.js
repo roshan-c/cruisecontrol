@@ -44,15 +44,16 @@ router.post('/progressBar', isAuthenticated, isAdmin, (req, res) => {
         // Assign new goals to users
         data.users.forEach(user => {
             const availableGoals = data.secondaryGoals.filter(goal => 
-                !user.completedGoals.includes(goal)
-            );
+                !user.completedGoals.includes(goal.name)
+            ).map(goal => goal.name);
+            
             user.currentGoal = availableGoals.length > 0 
                 ? availableGoals[Math.floor(Math.random() * availableGoals.length)]
                 : null;
         });
 
         saveData(data);
-        res.json({ message: `Progressed to next bar: ${data.bars[data.currentBarIndex]}` });
+        res.json({ message: `Progressed to next bar: ${data.bars[data.currentBarIndex].name}` });
     } else {
         res.json({ message: 'No more bars to progress to.' });
     }

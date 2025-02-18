@@ -12,8 +12,8 @@ router.get('/', isAuthenticated, (req, res) => {
         return res.status(400).json({ message: 'User not found' });
     }
 
-    const currentBar = data.bars[data.currentBarIndex] || 'No more bars';
-    const nextBar = data.bars[data.currentBarIndex + 1] || 'No more bars';
+    const currentBar = data.bars[data.currentBarIndex]?.name || 'No more bars';
+    const nextBar = data.bars[data.currentBarIndex + 1]?.name || 'No more bars';
 
     res.json({
         username: user.username,
@@ -36,7 +36,7 @@ router.post('/updateBar', isAuthenticated, (req, res) => {
         return res.status(400).json({ message: 'User not found' });
     }
 
-    const currentBar = data.bars[data.currentBarIndex];
+    const currentBar = data.bars[data.currentBarIndex].name;
     if (bar !== currentBar) {
         return res.status(400).json({ message: 'Can only update the current bar' });
     }
