@@ -31,6 +31,37 @@ npm start
 
 4. Access the application at `http://localhost:3000`
 
+## 🐳 Docker Deployment
+
+### Using Docker Compose (Recommended)
+
+1. Make sure you have Docker and Docker Compose installed
+2. Clone the repository and navigate to the project directory
+3. Build and start the containers:
+```bash
+docker-compose up -d
+```
+4. Access the application at `http://localhost:3000`
+
+To stop the application:
+```bash
+docker-compose down
+```
+
+### Manual Docker Build
+
+If you prefer to run Docker commands manually:
+
+1. Build the Docker image:
+```bash
+docker build -t cruisecontrol .
+```
+
+2. Run the container:
+```bash
+docker run -p 3000:3000 -d cruisecontrol
+```
+
 ## 🛳️ Cruise Ship Deployment
 
 ### Method 1: Using Android Phone with Termux
