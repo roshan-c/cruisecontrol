@@ -49,8 +49,12 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    alert('Signup successful! Please login.');
-                    window.location.href = '/login.html';
+                    // User is now automatically logged in, redirect based on role
+                    if (data.isAdmin) {
+                        window.location.href = '/admin.html';
+                    } else {
+                        window.location.href = '/home.html';
+                    }
                 } else {
                     errorDiv.style.display = 'block';
                     errorDiv.innerText = data.message || 'Signup failed';

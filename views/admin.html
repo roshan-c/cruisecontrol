@@ -30,6 +30,33 @@
         </div>
 
         <div class="card">
+            <h2>Event Management</h2>
+            <form id="createEventForm" class="event-form">
+                <div class="form-group">
+                    <label for="eventName">Event Name</label>
+                    <input type="text" id="eventName" required>
+                </div>
+                <div class="form-group">
+                    <label for="eventDuration">Duration (minutes)</label>
+                    <input type="number" id="eventDuration" min="1" required>
+                </div>
+                <button type="submit" class="btn">Create Event</button>
+            </form>
+
+            <div class="events-list">
+                <h3>Active Events</h3>
+                <div id="activeEvents" class="table-responsive">
+                    <!-- Active events will be populated here -->
+                </div>
+
+                <h3>Completed Events</h3>
+                <div id="completedEvents" class="table-responsive">
+                    <!-- Completed events will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
             <h2>Bar Control</h2>
             <button class="btn" onclick="progressBar()">Advance to Next Bar</button>
             <p id="progressStatus" class="status-message"></p>
@@ -77,6 +104,43 @@
             margin-right: 8px;
         }
 
+        /* Event management styles */
+        .event-form {
+            margin-bottom: 24px;
+        }
+        
+        .events-list {
+            margin-top: 24px;
+        }
+
+        .events-list h3 {
+            margin-bottom: 16px;
+            color: var(--spotify-light-gray);
+        }
+
+        .event-card {
+            background-color: var(--spotify-dark-gray);
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .event-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .event-details {
+            font-size: 14px;
+            color: var(--spotify-light-gray);
+        }
+
+        .event-actions {
+            margin-top: 12px;
+        }
+
         @media (max-width: 767px) {
             th, td {
                 padding: 8px;
@@ -85,6 +149,93 @@
             .edit-points {
                 width: 60px;
             }
+
+            .event-title {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .event-actions {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: var(--spotify-black);
+            padding: 24px;
+            border-radius: 8px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        /* Results podium styles */
+        .results-podium {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin: 32px 0;
+            height: 200px;
+            gap: 16px;
+        }
+
+        .podium-place {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            text-align: center;
+            width: 120px;
+        }
+
+        .podium-user {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .podium-points {
+            font-size: 14px;
+            color: var(--spotify-light-gray);
+        }
+
+        .place-1 {
+            height: 100%;
+            background-color: var(--spotify-green);
+            color: var(--spotify-black);
+        }
+
+        .place-2 {
+            height: 80%;
+            background-color: var(--spotify-light-gray);
+            color: var(--spotify-black);
+        }
+
+        .place-3 {
+            height: 60%;
+            background-color: #cd7f32;
+            color: var(--spotify-black);
+        }
+
+        .results-table {
+            margin-top: 24px;
+            width: 100%;
         }
     </style>
 
@@ -202,8 +353,177 @@
             window.location.href = '/home.html';
         }
 
+        // Event Management Functions
+        async function fetchEvents() {
+            try {
+                const response = await fetch('/admin/events', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) return;
+
+                const events = await response.json();
+                displayEvents(events);
+            } catch (error) {
+                console.error('Error fetching events:', error);
+            }
+        }
+
+        function displayEvents(events) {
+            const activeEventsDiv = document.getElementById('activeEvents');
+            const completedEventsDiv = document.getElementById('completedEvents');
+            
+            // Clear existing content
+            activeEventsDiv.innerHTML = '';
+            completedEventsDiv.innerHTML = '';
+
+            events.forEach(event => {
+                const eventHtml = `
+                    <div class="event-card">
+                        <div class="event-title">
+                            <h4>${event.name}</h4>
+                            <span>${event.status}</span>
+                        </div>
+                        <div class="event-details">
+                            <p>Started: ${new Date(event.startTime).toLocaleString()}</p>
+                            <p>Duration: ${event.duration / (60 * 1000)} minutes</p>
+                            <p>Participants: ${event.participants.length}</p>
+                        </div>
+                        <div class="event-actions">
+                            ${event.status === 'active' ? 
+                                `<button class="btn" onclick="endEvent('${event.id}')">End Event</button>` :
+                                `<button class="btn btn-secondary" onclick="viewResults('${event.id}')">View Results</button>`
+                            }
+                        </div>
+                    </div>
+                `;
+
+                if (event.status === 'active') {
+                    activeEventsDiv.innerHTML += eventHtml;
+                } else {
+                    completedEventsDiv.innerHTML += eventHtml;
+                }
+            });
+        }
+
+        async function endEvent(eventId) {
+            if (!confirm('Are you sure you want to end this event?')) return;
+
+            try {
+                const response = await fetch(`/admin/events/${eventId}/end`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to end event');
+                }
+
+                const data = await response.json();
+                alert('Event ended successfully');
+                fetchEvents();
+            } catch (error) {
+                console.error('Error ending event:', error);
+                alert('Failed to end event');
+            }
+        }
+
+        async function viewResults(eventId) {
+            try {
+                const response = await fetch(`/admin/events/${eventId}/results`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch results');
+                }
+
+                const results = await response.json();
+                displayEventResults(results);
+            } catch (error) {
+                console.error('Error fetching results:', error);
+                alert('Failed to fetch event results');
+            }
+        }
+
+        function displayEventResults(results) {
+            // Create a modal to display results
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3>${results.eventName} Results</h3>
+                    <div class="results-podium">
+                        ${results.participants.slice(0, 3).map((p, index) => `
+                            <div class="podium-place place-${index + 1}">
+                                <div class="podium-user">${p.username}</div>
+                                <div class="podium-points">${p.points} points</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Rank</th>
+                                <th>User</th>
+                                <th>Points</th>
+                                <th>Bars Visited</th>
+                                <th>Goals Completed</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${results.participants.map(p => `
+                                <tr>
+                                    <td>${p.rank}</td>
+                                    <td>${p.username}</td>
+                                    <td>${p.points}</td>
+                                    <td>${p.visitedBars.length}</td>
+                                    <td>${p.completedGoals.length}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                    <button class="btn" onclick="this.closest('.modal').remove()">Close</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Event form submission
+        document.getElementById('createEventForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('eventName').value,
+                duration: parseInt(document.getElementById('eventDuration').value, 10)
+            };
+
+            try {
+                const response = await fetch('/admin/events', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to create event');
+                }
+
+                alert('Event created successfully');
+                e.target.reset();
+                fetchEvents();
+            } catch (error) {
+                console.error('Error creating event:', error);
+                alert('Failed to create event');
+            }
+        });
+
         // Initialize
         fetchUsers();
+        fetchEvents();
     </script>
 </body>
 </html>

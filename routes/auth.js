@@ -47,7 +47,11 @@ router.post('/signup', async (req, res) => {
     };
     data.users.push(newUser);
     saveData(data);
-    res.json({ message: 'Signup successful' });
+    
+    // Automatically log in the user after signup
+    req.session.username = username;
+    req.session.isAdmin = newUser.isAdmin;
+    res.json({ message: 'Signup successful', isAdmin: newUser.isAdmin });
 });
 
 // Logout Route

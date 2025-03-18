@@ -5,10 +5,10 @@ A modern, Spotify-inspired bar crawl tracking application designed specifically 
 ## 🌟 Features
 
 - **Modern UI**: Spotify-inspired dark theme with mobile-first design
-- **Bar Tracking**: Check off bars as you visit them and earn points
-- **Secondary Goals**: Complete random challenges for bonus points
-- **Leaderboard**: Compete with other participants
-- **Admin Controls**: Manage users and control bar progression
+- **Event System**: Create and join timed bar crawl events
+- **Event Progress**: Track bars visited and goals completed within events
+- **Event Results**: View event rankings and podium displays
+- **Admin Controls**: Create events, manage users, and track progress
 - **Offline-First**: Works through local network, no ship Wi-Fi needed
 
 ## 🚀 Quick Start
@@ -143,16 +143,18 @@ cruisecontrol/
 
 ### User Features
 - Account creation and authentication
-- Bar visit tracking with points
-- Secondary goals/challenges
-- Real-time point updates
+- Join and participate in bar crawl events
+- Track event-specific progress and points
+- Complete event challenges and goals
+- View event rankings and results
 - Mobile-responsive interface
 
 ### Admin Features
 - User management
-- Point adjustment
-- Bar progression control
-- Goal assignment
+- Create and manage timed events
+- Set available bars and goals for events
+- End events and view detailed results
+- Adjust user points and manage accounts
 
 ## 🎨 UI/UX
 

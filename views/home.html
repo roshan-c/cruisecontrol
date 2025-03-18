@@ -5,6 +5,64 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - CruiseControl</title>
     <link href="/css/styles.css" rel="stylesheet">
+    <style>
+        /* Event styles */
+        .progress-section {
+            margin: 16px 0;
+        }
+
+        .progress-section h4 {
+            margin-bottom: 8px;
+            color: var(--spotify-light-gray);
+        }
+
+        .checkbox-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .event-card {
+            background-color: var(--spotify-dark-gray);
+            border-radius: 4px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .event-title {
+            margin-bottom: 8px;
+        }
+
+        .event-title h4 {
+            margin: 0;
+            color: var(--spotify-white);
+        }
+
+        .event-details {
+            font-size: 14px;
+            color: var(--spotify-light-gray);
+            margin-bottom: 16px;
+        }
+
+        .event-details p {
+            margin: 4px 0;
+        }
+
+        #eventName {
+            color: var(--spotify-green);
+            margin-bottom: 8px;
+        }
+
+        #eventPoints {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--spotify-green);
+        }
+
+        .events-list {
+            margin-top: 16px;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -12,29 +70,26 @@
             <span id="points">0</span> Points
         </div>
 
-        <div class="card">
-            <h2>Current Bar</h2>
-            <div class="bar-item active">
-                <div class="checkbox-wrapper">
-                    <input type="checkbox" id="currentBarCheckbox">
-                    <span id="currentBar">Loading...</span>
+        <div class="card" id="activeEventCard" style="display: none;">
+            <h2>Current Event</h2>
+            <div id="eventProgress">
+                <h3 id="eventName"></h3>
+                <p>Event Points: <span id="eventPoints">0</span></p>
+                <div class="progress-section">
+                    <h4>Bars Visited</h4>
+                    <div class="checkbox-list" id="eventBars"></div>
                 </div>
-            </div>
-            
-            <h3>Next Stop</h3>
-            <div class="bar-item">
-                <span id="nextBar">Loading...</span>
+                <div class="progress-section">
+                    <h4>Goals Completed</h4>
+                    <div class="checkbox-list" id="eventGoals"></div>
+                </div>
             </div>
         </div>
-        
-        <div class="card">
-            <h2>Secondary Goal</h2>
-            <div class="goals-list">
-                <div class="goal-item" id="currentGoalContainer" style="display: none;">
-                    <input type="checkbox" id="currentGoalCheckbox">
-                    <span id="currentGoal"></span>
-                </div>
-                <p id="noGoalMessage" style="display: none;">No current goals assigned.</p>
+
+        <div class="card" id="availableEventsCard">
+            <h2>Available Events</h2>
+            <div id="availableEvents" class="events-list">
+                <!-- Available events will be populated here -->
             </div>
         </div>
 
@@ -45,6 +100,9 @@
     </div>
 
     <script>
+        // Store current username
+        let currentUsername;
+
         // Fetch user data from the server
         async function fetchHomeData() {
             try {
@@ -59,23 +117,8 @@
                 }
 
                 const data = await response.json();
+                currentUsername = data.username; // Store username for events
                 document.getElementById('points').innerText = data.points;
-                document.getElementById('currentBar').innerText = data.currentBar;
-                document.getElementById('nextBar').innerText = data.nextBar;
-                document.getElementById('currentBarCheckbox').checked = data.visitedBars.includes(data.currentBar);
-
-                // Handle current goal display
-                const goalContainer = document.getElementById('currentGoalContainer');
-                const noGoalMessage = document.getElementById('noGoalMessage');
-                if (data.currentGoal) {
-                    document.getElementById('currentGoal').innerText = data.currentGoal;
-                    goalContainer.style.display = 'flex';
-                    noGoalMessage.style.display = 'none';
-                } else {
-                    goalContainer.style.display = 'none';
-                    noGoalMessage.style.display = 'block';
-                    noGoalMessage.innerText = 'No current goals assigned.';
-                }
 
                 // Admin section
                 const adminSection = document.getElementById('adminSection');
@@ -87,96 +130,11 @@
                     adminCard.innerHTML = `
                         <h2>Admin Controls</h2>
                         <button class="btn" onclick="window.location.href='/admin.html'">Admin Panel</button>
-                        <button class="btn btn-secondary" onclick="advanceToNextBar()">Advance to Next Bar</button>
                     `;
                     adminSection.appendChild(adminCard);
                 }
-
-                // Setup event listeners
-                document.getElementById('currentBarCheckbox').onchange = (e) => {
-                    updateBar(data.currentBar, e.target.checked);
-                };
-
-                document.getElementById('currentGoalCheckbox').onchange = (e) => {
-                    if (e.target.checked) {
-                        completeGoal();
-                    }
-                };
-
             } catch (error) {
                 console.error('Error fetching home data:', error);
-            }
-        }
-
-        // Update bar status
-        async function updateBar(bar, isChecked) {
-            try {
-                const response = await fetch('/home/updateBar', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ bar, isChecked })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    document.getElementById('points').innerText = data.points;
-                } else {
-                    alert(data.message || 'Failed to update bar status');
-                    // Revert checkbox state
-                    document.getElementById('currentBarCheckbox').checked = !isChecked;
-                }
-            } catch (error) {
-                console.error('Error updating bar:', error);
-                alert('An error occurred. Please try again.');
-                // Revert checkbox state
-                document.getElementById('currentBarCheckbox').checked = !isChecked;
-            }
-        }
-
-        // Complete goal function
-        async function completeGoal() {
-            try {
-                const response = await fetch('/home/completeGoal', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include'
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    document.getElementById('points').innerText = data.points;
-                    // Refresh home data to get new goal if available
-                    fetchHomeData();
-                } else {
-                    alert(data.message || 'Failed to complete goal');
-                    // Uncheck the checkbox
-                    document.getElementById('currentGoalCheckbox').checked = false;
-                }
-            } catch (error) {
-                console.error('Error completing goal:', error);
-                alert('An error occurred. Please try again.');
-                // Uncheck the checkbox
-                document.getElementById('currentGoalCheckbox').checked = false;
-            }
-        }
-
-        // Admin function to advance to next bar
-        async function advanceToNextBar() {
-            if (!confirm('Are you sure you want to advance to the next bar?')) return;
-
-            try {
-                const response = await fetch('/admin/progressBar', {
-                    method: 'POST',
-                    credentials: 'include'
-                });
-
-                const data = await response.json();
-                alert(data.message);
-                fetchHomeData();
-            } catch (error) {
-                console.error('Error advancing to next bar:', error);
-                alert('An error occurred. Please try again.');
             }
         }
 
@@ -194,8 +152,135 @@
             }
         }
 
+        // Event Management Functions
+        async function fetchEvents() {
+            try {
+                const response = await fetch('/admin/events', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) return;
+
+                const events = await response.json();
+                displayEvents(events);
+            } catch (error) {
+                console.error('Error fetching events:', error);
+            }
+        }
+
+        function displayEvents(events) {
+            const availableEventsDiv = document.getElementById('availableEvents');
+            const activeEventCard = document.getElementById('activeEventCard');
+            const activeEvent = events.find(e => {
+                return e.status === 'active' && 
+                       e.participants.some(p => p.username === currentUsername);
+            });
+
+            // Display active event if user is participating
+            if (activeEvent) {
+                const participant = activeEvent.participants.find(p => 
+                    p.username === currentUsername
+                );
+                
+                document.getElementById('eventName').innerText = activeEvent.name;
+                document.getElementById('eventPoints').innerText = participant.points;
+
+                // Display bars
+                const eventBarsDiv = document.getElementById('eventBars');
+                eventBarsDiv.innerHTML = activeEvent.settings.availableBars.map(bar => `
+                    <div class="goal-item">
+                        <input type="checkbox" ${participant.visitedBars.includes(bar) ? 'checked' : ''}
+                               onchange="updateEventProgress('${activeEvent.id}', '${bar}', null)">
+                        <span>${bar}</span>
+                    </div>
+                `).join('');
+
+                // Display goals
+                const eventGoalsDiv = document.getElementById('eventGoals');
+                eventGoalsDiv.innerHTML = activeEvent.settings.availableGoals.map(goal => `
+                    <div class="goal-item">
+                        <input type="checkbox" ${participant.completedGoals.includes(goal) ? 'checked' : ''}
+                               onchange="updateEventProgress('${activeEvent.id}', null, '${goal}')">
+                        <span>${goal}</span>
+                    </div>
+                `).join('');
+
+                activeEventCard.style.display = 'block';
+            } else {
+                activeEventCard.style.display = 'none';
+            }
+
+            // Display available events
+            availableEventsDiv.innerHTML = events
+                .filter(e => e.status === 'active')
+                .map(event => {
+                    const isParticipating = event.participants.some(p => 
+                        p.username === currentUsername
+                    );
+                    
+                    return `
+                        <div class="event-card">
+                            <div class="event-title">
+                                <h4>${event.name}</h4>
+                            </div>
+                            <div class="event-details">
+                                <p>Started: ${new Date(event.startTime).toLocaleString()}</p>
+                                <p>Duration: ${event.duration / (60 * 1000)} minutes</p>
+                                <p>Participants: ${event.participants.length}</p>
+                            </div>
+                            ${!isParticipating ? `
+                                <button class="btn" onclick="joinEvent('${event.id}')">Join Event</button>
+                            ` : ''}
+                        </div>
+                    `;
+                }).join('') || '<p>No active events available.</p>';
+        }
+
+        async function joinEvent(eventId) {
+            try {
+                const response = await fetch(`/admin/events/${eventId}/join`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to join event');
+                }
+
+                alert('Successfully joined event');
+                fetchEvents();
+            } catch (error) {
+                console.error('Error joining event:', error);
+                alert('Failed to join event');
+            }
+        }
+
+        async function updateEventProgress(eventId, bar, goal) {
+            try {
+                const response = await fetch(`/admin/events/${eventId}/progress`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ bar, goal })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update progress');
+                }
+
+                const data = await response.json();
+                document.getElementById('eventPoints').innerText = data.totalPoints;
+            } catch (error) {
+                console.error('Error updating event progress:', error);
+                alert('Failed to update progress');
+                fetchEvents(); // Refresh to reset checkboxes
+            }
+        }
+
         // Initialize
         fetchHomeData();
+        fetchEvents();
     </script>
 </body>
 </html>
