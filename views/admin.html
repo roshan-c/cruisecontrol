@@ -57,9 +57,24 @@
         </div>
 
         <div class="card">
-            <h2>Bar Control</h2>
-            <button class="btn" onclick="progressBar()">Advance to Next Bar</button>
-            <p id="progressStatus" class="status-message"></p>
+            <h2>Manage Bars and Goals</h2>
+            <form class="manage-form">
+                <div class="form-group">
+                    <label for="newBarName">Add New Bar</label>
+                    <div class="input-group">
+                        <input type="text" id="newBarName" placeholder="Enter bar name">
+                        <button type="button" class="btn" onclick="addBar()">Add Bar</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="newGoalName">Add New Goal</label>
+                    <div class="input-group">
+                        <input type="text" id="newGoalName" placeholder="Enter goal name">
+                        <button type="button" class="btn" onclick="addGoal()">Add Goal</button>
+                    </div>
+                </div>
+            </form>
+            <p id="manageStatus" class="status-message"></p>
         </div>
 
         <button class="btn btn-secondary" onclick="logout()">Back to Home</button>
@@ -67,6 +82,16 @@
 
     <style>
         /* Additional styles specific to admin page */
+        .input-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .input-group input {
+            flex: 1;
+            margin-right: 8px;
+        }
         .table-responsive {
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
@@ -102,6 +127,31 @@
             border-radius: 4px;
             color: var(--spotify-white);
             margin-right: 8px;
+        }
+
+        /* Form styles */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--spotify-light-gray);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--spotify-light-gray);
+            border-radius: 4px;
+            background-color: var(--spotify-dark-gray);
+            color: var(--spotify-white);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--spotify-green);
         }
 
         /* Event management styles */
@@ -323,27 +373,70 @@
             }
         }
 
-        // Progress Bar Function
-        async function progressBar() {
+        // Add new bar function
+        async function addBar() {
+            const barName = document.getElementById('newBarName').value.trim();
+            if (!barName) {
+                alert('Please enter a bar name');
+                return;
+            }
+
             try {
-                const response = await fetch('/admin/progressBar', {
+                const response = await fetch('/admin/bars', {
                     method: 'POST',
-                    credentials: 'include'
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ name: barName })
                 });
 
                 const data = await response.json();
-                const statusElement = document.getElementById('progressStatus');
+                const statusElement = document.getElementById('manageStatus');
 
                 if (response.ok) {
-                    statusElement.textContent = data.message;
+                    statusElement.textContent = 'Bar added successfully';
                     statusElement.style.color = 'var(--spotify-green)';
-                    fetchUsers();
+                    document.getElementById('newBarName').value = '';
+                    fetchEvents(); // Refresh events to show updated bars
                 } else {
-                    statusElement.textContent = data.message || 'Progress failed.';
+                    statusElement.textContent = data.message || 'Failed to add bar';
                     statusElement.style.color = '#ff4b4b';
                 }
             } catch (error) {
-                console.error('Error progressing bar:', error);
+                console.error('Error adding bar:', error);
+                alert('An error occurred. Please try again.');
+            }
+        }
+
+        // Add new goal function
+        async function addGoal() {
+            const goalName = document.getElementById('newGoalName').value.trim();
+            if (!goalName) {
+                alert('Please enter a goal name');
+                return;
+            }
+
+            try {
+                const response = await fetch('/admin/goals', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ name: goalName })
+                });
+
+                const data = await response.json();
+                const statusElement = document.getElementById('manageStatus');
+
+                if (response.ok) {
+                    statusElement.textContent = 'Goal added successfully';
+                    statusElement.style.color = 'var(--spotify-green)';
+                    document.getElementById('newGoalName').value = '';
+                    fetchEvents(); // Refresh events to show updated goals
+                } else {
+                    statusElement.textContent = data.message || 'Failed to add goal';
+                    statusElement.style.color = '#ff4b4b';
+                }
+            } catch (error) {
+                console.error('Error adding goal:', error);
                 alert('An error occurred. Please try again.');
             }
         }

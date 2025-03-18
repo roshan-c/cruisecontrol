@@ -218,4 +218,74 @@ router.post('/updatePoints', isAuthenticated, isAdmin, (req, res) => {
         res.json({ message: 'User points updated', points: user.points });
     });
 
+// Add new bar
+router.post('/bars', isAuthenticated, isAdmin, (req, res) => {
+    const { name } = req.body;
+    
+    if (!name) {
+        return res.status(400).json({ message: 'Bar name is required' });
+    }
+
+    const data = getData();
+    
+    // Check if bar already exists
+    if (data.bars.some(bar => bar.name === name)) {
+        return res.status(400).json({ message: 'Bar already exists' });
+    }
+
+    // Add new bar to global list
+    data.bars.push({ name });
+
+    // Add new bar to all active events
+    if (data.events) {
+        data.events.forEach(event => {
+            if (event.status === 'active' && !event.settings.availableBars.includes(name)) {
+                event.settings.availableBars.push(name);
+            }
+        });
+    }
+
+    saveData(data);
+    res.json({ 
+        message: 'Bar added successfully',
+        bar: name,
+        activeEventsUpdated: data.events ? data.events.filter(e => e.status === 'active').length : 0
+    });
+});
+
+// Add new challenge/goal
+router.post('/goals', isAuthenticated, isAdmin, (req, res) => {
+    const { name } = req.body;
+    
+    if (!name) {
+        return res.status(400).json({ message: 'Goal name is required' });
+    }
+
+    const data = getData();
+    
+    // Check if goal already exists
+    if (data.secondaryGoals.some(goal => goal.name === name)) {
+        return res.status(400).json({ message: 'Goal already exists' });
+    }
+
+    // Add new goal to global list
+    data.secondaryGoals.push({ name });
+
+    // Add new goal to all active events
+    if (data.events) {
+        data.events.forEach(event => {
+            if (event.status === 'active' && !event.settings.availableGoals.includes(name)) {
+                event.settings.availableGoals.push(name);
+            }
+        });
+    }
+
+    saveData(data);
+    res.json({ 
+        message: 'Goal added successfully',
+        goal: name,
+        activeEventsUpdated: data.events ? data.events.filter(e => e.status === 'active').length : 0
+    });
+});
+
 module.exports = router;

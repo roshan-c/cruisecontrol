@@ -3,7 +3,7 @@
   "users": [
     {
       "username": "roshan",
-      "password": "Pjproby123!  ",
+      "password": "Pjproby123!",
       "isAdmin": true,
       "visitedBars": [],
       "points": 0,
@@ -44,6 +44,9 @@
     },
     {
       "name": "Keystones"
+    },
+    {
+      "name": "fart bar"
     }
   ],
   "events": [
