@@ -21,15 +21,22 @@ cd cruisecontrol
 
 2. Install dependencies:
 ```bash
-npm install
+bundle install
 ```
 
-3. Start the server:
+3. Set up the database:
 ```bash
-npm start
+rails db:create
+rails db:migrate
+rails db:seed
 ```
 
-4. Access the application at `http://localhost:3000`
+4. Start the server:
+```bash
+rails server
+```
+
+5. Access the application at `http://localhost:3000`
 
 ## 🐳 Docker Deployment
 
@@ -67,22 +74,24 @@ docker run -p 3000:3000 -d cruisecontrol
 ### Method 1: Using Android Phone with Termux
 
 1. Install Termux from F-Droid (preferred) or Google Play Store
-2. Set up Node.js environment in Termux:
+2. Set up Ruby and Rails environment in Termux:
 ```bash
 pkg update
-pkg install nodejs
+pkg install ruby
+gem install rails bundler
 ```
 
 3. Clone and set up the application:
 ```bash
 git clone https://github.com/roshan-c/cruisecontrol.git
 cd cruisecontrol
-npm install
+bundle install
+rails db:setup
 ```
 
 4. Start the server:
 ```bash
-npm start
+rails server -b 0.0.0.0
 ```
 
 5. Enable phone's hotspot
@@ -91,52 +100,54 @@ npm start
 
 ### Method 2: Using iPhone
 
-1. Install a Node.js server app from the App Store (like "Server for Node")
-2. Import the project files
-3. Start the server through the app
-4. Enable personal hotspot
-5. Connect other devices to the hotspot
-6. Access using the iPhone's hotspot IP address
+Due to iOS limitations, deploying Rails apps on iPhone requires specialized apps or cloud solutions. Consider using cloud hosting services instead.
 
 ## 💻 Development
 
 ### Prerequisites
 
-- Node.js (v14 or higher)
-- npm (v6 or higher)
+- Ruby (v3.2 or higher)
+- Rails (v8.0 or higher)
+- SQLite3
 
 ### Environment Setup
 
 1. Fork and clone the repository
-2. Install dependencies: `npm install`
-3. Start development server: `npm run dev`
+2. Install dependencies: `bundle install`
+3. Set up database: `rails db:setup`
+4. Start development server: `rails server`
 
 ### Project Structure
 
 ```
 cruisecontrol/
-├── config/             # Configuration files
-│   └── db.json        # JSON database file
-├── middleware/        # Express middleware
-│   └── auth.js       # Authentication middleware
-├── models/           # Data models
-│   └── db.js        # Database operations
+├── app/
+│   ├── controllers/    # Rails controllers
+│   │   ├── admin_controller.rb
+│   │   ├── auth_controller.rb
+│   │   └── users_controller.rb
+│   └── models/        # Rails models
+│       ├── user.rb
+│       ├── bar.rb
+│       ├── event.rb
+│       └── goal.rb
+├── config/            # Rails configuration
+│   ├── routes.rb      # API routes
+│   └── database.yml   # Database configuration
+├── db/               # Database files
+│   ├── migrate/      # Database migrations
+│   └── seeds.rb      # Sample data
 ├── public/          # Static files
 │   ├── css/        # Stylesheets
 │   └── js/         # Client-side JavaScript
-├── routes/         # Express routes
-│   ├── admin.js   # Admin routes
-│   ├── auth.js    # Authentication routes
-│   └── user.js    # User routes
-├── views/         # HTML templates
+├── views/          # HTML templates
 │   ├── admin.html
 │   ├── home.html
 │   ├── index.html
 │   ├── login.html
 │   └── signup.html
-├── package.json
-├── README.md
-└── server.js      # Application entry point
+├── Gemfile         # Ruby dependencies
+└── README.md
 ```
 
 ## 🎯 Features in Detail
@@ -167,13 +178,20 @@ cruisecontrol/
 ## 🔒 Security Notes
 
 - This is a local network application
-- Uses basic session-based authentication
+- Uses Rails session-based authentication
 - Passwords are stored in plaintext (suitable for casual use)
 - For enhanced security in production:
-  - Implement password hashing
+  - Implement password hashing with bcrypt
   - Add HTTPS
   - Implement rate limiting
   - Add input validation
+
+## 🧪 Testing
+
+Run the test suite:
+```bash
+rails test
+```
 
 ## 📝 License
 
