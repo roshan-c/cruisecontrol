@@ -33,11 +33,9 @@ Rails.application.routes.draw do
     post '/goals', to: 'admin#add_goal'
   end
   
-  # Legacy route aliases to maintain API compatibility
-  scope '/admin' do
-    post '/updatePoints', to: 'admin#update_user_points'
-    post '/bars', to: 'admin#add_bar'
-  end
+  # Legacy route aliases to maintain API compatibility with Node.js routes
+  post '/updatePoints', to: 'admin#update_user_points'
+  post '/bars', to: 'admin#add_bar'
   
   # Health check
   get "up" => "rails/health#show", as: :rails_health_check
