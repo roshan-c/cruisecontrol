@@ -37,6 +37,92 @@ class UsersController < ApplicationController
       currentGoal: user.current_goal
     }
   end
+  
+  # POST /home/visit-bar
+  def visit_bar
+    bar_name = params[:barName]
+    user = current_user
+    
+    if bar_name.blank?
+      return render json: { message: 'Bar name is required' }, status: 400
+    end
+    
+    bar = Bar.find_by(name: bar_name)
+    unless bar
+      return render json: { message: 'Bar not found' }, status: 404
+    end
+    
+    # Find active event participation
+    active_event = Event.find_by(status: 'active')
+    if active_event
+      participant = EventParticipant.find_by(event: active_event, user: user)
+      if participant
+        # Event-specific progress tracking
+        unless participant.visited_bars.include?(bar_name)
+          participant.visited_bars << bar_name
+          participant.points += 10  # Award points for visiting a bar
+          participant.save!
+        end
+        
+        render json: { message: 'Bar visit recorded', points: participant.points }
+      else
+        render json: { message: 'User not participating in active event' }, status: 400
+      end
+    else
+      # Fallback to global tracking when no active event
+      unless user.visited_bars.include?(bar)
+        user.visited_bars << bar
+        user.points += 10  # Award points for visiting a bar
+        user.save!
+      end
+      
+      render json: { message: 'Bar visit recorded', points: user.points }
+    end
+  end
+  
+  # POST /home/complete-goal
+  def complete_goal
+    goal_name = params[:goalName]
+    user = current_user
+    
+    if goal_name.blank?
+      return render json: { message: 'Goal name is required' }, status: 400
+    end
+    
+    goal = Goal.find_by(name: goal_name)
+    unless goal
+      return render json: { message: 'Goal not found' }, status: 404
+    end
+    
+    # Find active event participation
+    active_event = Event.find_by(status: 'active')
+    if active_event
+      participant = EventParticipant.find_by(event: active_event, user: user)
+      if participant
+        # Event-specific progress tracking
+        unless participant.completed_goals.include?(goal_name)
+          participant.completed_goals << goal_name
+          participant.points += 20  # Award points for completing a goal (fixed from 30 to 20)
+          participant.save!
+        end
+        
+        render json: { message: 'Goal completed', points: participant.points }
+      else
+        render json: { message: 'User not participating in active event' }, status: 400
+      end
+    else
+      # Fallback to global tracking when no active event
+      unless user.completed_goals.include?(goal)
+        user.completed_goals << goal
+        user.points += 20  # Award points for completing a goal (fixed from 30 to 20)
+        user.current_goal = nil if user.current_goal == goal_name
+        user.save!
+      end
+      
+      render json: { message: 'Goal completed', points: user.points }
+    end
+  end
+  
   # POST /home/join-event
   def join_event
     event_id = params[:eventId]

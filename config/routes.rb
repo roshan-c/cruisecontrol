@@ -8,6 +8,8 @@ Rails.application.routes.draw do
   scope '/home' do
     get '/', to: 'users#index'
     get '/user-data', to: 'users#show'
+    post '/visit-bar', to: 'users#visit_bar'
+    post '/complete-goal', to: 'users#complete_goal'
     post '/join-event', to: 'users#join_event'
     post '/leave-event', to: 'users#leave_event'
   end
