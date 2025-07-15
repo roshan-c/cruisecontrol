@@ -161,4 +161,133 @@ class AdminController < ApplicationController
     
     render json: { message: 'User deleted successfully' }
   end
+  
+  # POST /admin/events/:id/join
+  def join_event
+    event_id = params[:id]
+    user = current_user
+    
+    event = Event.find_by(id: event_id)
+    unless event
+      return render json: { message: 'Event not found' }, status: 404
+    end
+    
+    unless event.active?
+      return render json: { message: 'Cannot join a completed event' }, status: 400
+    end
+    
+    # Check if user is already a participant
+    existing_participant = event.event_participants.find_by(user: user)
+    if existing_participant
+      return render json: { message: 'Already joined this event' }, status: 400
+    end
+    
+    # Add user as a participant
+    EventParticipant.create!(
+      event: event,
+      user: user,
+      points: 0,
+      visited_bars: [],
+      completed_goals: []
+    )
+    
+    render json: { message: 'Joined event successfully' }
+  end
+  
+  # POST /admin/events/:id/progress
+  def update_progress
+    event_id = params[:id]
+    bar = params[:bar]
+    goal = params[:goal]
+    
+    event = Event.find_by(id: event_id)
+    unless event
+      return render json: { message: 'Event not found' }, status: 404
+    end
+    
+    unless event.active?
+      return render json: { message: 'Cannot update progress for completed event' }, status: 400
+    end
+    
+    participant = event.event_participants.find_by(user: current_user)
+    unless participant
+      return render json: { message: 'Not a participant in this event' }, status: 400
+    end
+    
+    points_earned = 0
+    
+    # Handle bar visit
+    if bar.present? && event.available_bars.exists?(name: bar)
+      unless participant.visited_bars.include?(bar)
+        participant.visited_bars << bar
+        points_earned += 10  # 10 points for visiting a new bar
+      end
+    end
+    
+    # Handle goal completion
+    if goal.present? && event.available_goals.exists?(name: goal)
+      unless participant.completed_goals.include?(goal)
+        participant.completed_goals << goal
+        points_earned += 20  # 20 points for completing a goal
+      end
+    end
+    
+    participant.points += points_earned
+    participant.save!
+    
+    render json: {
+      message: 'Progress updated',
+      pointsEarned: points_earned,
+      totalPoints: participant.points,
+      visitedBars: participant.visited_bars,
+      completedGoals: participant.completed_goals
+    }
+  end
+  
+  # GET /admin/events/:id/results
+  def event_results
+    event_id = params[:id]
+    
+    event = Event.find_by(id: event_id)
+    unless event
+      return render json: { message: 'Event not found' }, status: 404
+    end
+    
+    participants = event.event_participants.includes(:user).map do |participant|
+      {
+        username: participant.user.username,
+        points: participant.points,
+        visitedBars: participant.visited_bars || [],
+        completedGoals: participant.completed_goals || []
+      }
+    end
+    
+    render json: {
+      event: {
+        id: event.id,
+        name: event.name,
+        status: event.status,
+        startTime: event.start_time,
+        endTime: event.end_time
+      },
+      participants: participants
+    }
+  end
+  
+  # POST /admin/goals
+  def add_goal
+    goal_name = params[:name]
+    
+    if goal_name.blank?
+      return render json: { message: 'Goal name is required' }, status: 400
+    end
+    
+    if Goal.exists?(name: goal_name)
+      return render json: { message: 'Goal already exists' }, status: 400
+    end
+    
+    goal = Goal.create!(name: goal_name)
+    
+    render json: { message: 'Goal added successfully', goal: { id: goal.id, name: goal.name } }
+  end
 end
