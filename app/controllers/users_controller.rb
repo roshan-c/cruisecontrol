@@ -64,7 +64,7 @@ class UsersController < ApplicationController
       
       render json: { message: 'Bar visit recorded', points: participant.points }
     else
-      # Fallback to global tracking when no active event
+      # Fallback to global tracking when no active event or user not participating
       unless user.visited_bars.include?(bar)
         user.visited_bars << bar
         user.points += 10  # Award points for visiting a bar
@@ -101,7 +101,7 @@ class UsersController < ApplicationController
       
       render json: { message: 'Goal completed', points: participant.points }
     else
-      # Fallback to global tracking when no active event
+      # Fallback to global tracking when no active event or user not participating
       unless user.completed_goals.include?(goal)
         user.completed_goals << goal
         user.points += 20  # Award points for completing a goal (fixed from 30 to 20)
