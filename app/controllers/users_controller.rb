@@ -53,21 +53,16 @@ class UsersController < ApplicationController
     end
     
     # Find active event participation
-    active_event = Event.find_by(status: 'active')
-    if active_event
-      participant = EventParticipant.find_by(event: active_event, user: user)
-      if participant
-        # Event-specific progress tracking
-        unless participant.visited_bars.include?(bar_name)
-          participant.visited_bars << bar_name
-          participant.points += 10  # Award points for visiting a bar
-          participant.save!
-        end
-        
-        render json: { message: 'Bar visit recorded', points: participant.points }
-      else
-        render json: { message: 'User not participating in active event' }, status: 400
+    participant = user.event_participants.joins(:event).where(events: { status: 'active' }).first
+    if participant
+      # Event-specific progress tracking
+      unless participant.visited_bars.include?(bar_name)
+        participant.visited_bars << bar_name
+        participant.points += 10  # Award points for visiting a bar
+        participant.save!
       end
+      
+      render json: { message: 'Bar visit recorded', points: participant.points }
     else
       # Fallback to global tracking when no active event
       unless user.visited_bars.include?(bar)
@@ -95,21 +90,16 @@ class UsersController < ApplicationController
     end
     
     # Find active event participation
-    active_event = Event.find_by(status: 'active')
-    if active_event
-      participant = EventParticipant.find_by(event: active_event, user: user)
-      if participant
-        # Event-specific progress tracking
-        unless participant.completed_goals.include?(goal_name)
-          participant.completed_goals << goal_name
-          participant.points += 20  # Award points for completing a goal (fixed from 30 to 20)
-          participant.save!
-        end
-        
-        render json: { message: 'Goal completed', points: participant.points }
-      else
-        render json: { message: 'User not participating in active event' }, status: 400
+    participant = user.event_participants.joins(:event).where(events: { status: 'active' }).first
+    if participant
+      # Event-specific progress tracking
+      unless participant.completed_goals.include?(goal_name)
+        participant.completed_goals << goal_name
+        participant.points += 20  # Award points for completing a goal (fixed from 30 to 20)
+        participant.save!
       end
+      
+      render json: { message: 'Goal completed', points: participant.points }
     else
       # Fallback to global tracking when no active event
       unless user.completed_goals.include?(goal)
