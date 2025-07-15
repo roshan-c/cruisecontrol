@@ -140,15 +140,17 @@ class UsersController < ApplicationController
     
     # Check if user is already participating
     participant = EventParticipant.find_by(event: event, user: user)
-    unless participant
-      EventParticipant.create!(
-        event: event,
-        user: user,
-        points: 0,
-        visited_bars: [],
-        completed_goals: []
-      )
+    if participant
+      return render json: { message: 'Already joined this event' }, status: 400
     end
+    
+    EventParticipant.create!(
+      event: event,
+      user: user,
+      points: 0,
+      visited_bars: [],
+      completed_goals: []
+    )
     
     render json: { message: 'Joined event successfully' }
   end
