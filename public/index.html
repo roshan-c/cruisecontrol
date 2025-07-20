@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CruiseControl - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-900 text-slate-100">
+    <div class="flex items-center justify-center min-h-screen px-4">
+        <div class="max-w-md w-full space-y-8">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold text-emerald-500">🍺 CruiseControl</h1>
+                <p class="mt-2 text-slate-300">Bar crawl tracker for cruise ships</p>
+            </div>
+            
+            <div class="bg-slate-800 rounded-lg shadow-lg p-6 space-y-6">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-slate-300 mb-2">
+                        Enter Username
+                    </label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        name="username" 
+                        class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-700 bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        placeholder="Your username"
+                        maxlength="50"
+                    />
+                </div>
+                
+                <div class="space-y-3">
+                    <button 
+                        id="loginBtn"
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+                    >
+                        Login
+                    </button>
+                    
+                    <button 
+                        id="registerBtn"
+                        class="w-full flex justify-center py-2 px-4 border border-slate-600 rounded-md shadow-sm text-sm font-medium text-slate-300 bg-transparent hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50"
+                    >
+                        Create New Account
+                    </button>
+                </div>
+                
+                <div id="error" class="hidden text-red-400 text-sm text-center"></div>
+            </div>
+            
+            <div class="text-center text-slate-400 text-sm">
+                <p>No passwords required!</p>
+                <p class="mt-1">Admin username: <span class="text-emerald-400">admin</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const usernameInput = document.getElementById('username');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const errorDiv = document.getElementById('error');
+
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorDiv.classList.add('hidden');
+        }
+
+        async function makeRequest(endpoint, data) {
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    window.location.href = '/events.html';
+                } else {
+                    showError(result.error || 'An error occurred');
+                }
+            } catch (error) {
+                showError('Network error. Please try again.');
+            }
+        }
+
+        loginBtn.addEventListener('click', async () => {
+            const username = usernameInput.value.trim();
+            if (!username) {
+                showError('Please enter a username');
+                return;
+            }
+            
+            hideError();
+            loginBtn.disabled = true;
+            registerBtn.disabled = true;
+            
+            await makeRequest('/api/login', { username });
+            
+            loginBtn.disabled = false;
+            registerBtn.disabled = false;
+        });
+
+        registerBtn.addEventListener('click', async () => {
+            const username = usernameInput.value.trim();
+            if (!username) {
+                showError('Please enter a username');
+                return;
+            }
+            
+            hideError();
+            loginBtn.disabled = true;
+            registerBtn.disabled = true;
+            
+            await makeRequest('/api/register', { username });
+            
+            loginBtn.disabled = false;
+            registerBtn.disabled = false;
+        });
+
+        usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loginBtn.click();
+            }
+        });
+
+        // Auto-focus username input
+        usernameInput.focus();
+    </script>
+</body>
+</html>

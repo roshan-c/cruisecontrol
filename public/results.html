@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CruiseControl - Results</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-900 text-slate-100">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-emerald-500">🍺 CruiseControl</h1>
+                <p class="text-slate-300">Event Results & Leaderboard</p>
+            </div>
+            <div class="flex gap-2">
+                <button 
+                    onclick="goBack()"
+                    class="px-4 py-2 border border-slate-600 rounded-md hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                    Back
+                </button>
+                <button 
+                    id="logoutBtn"
+                    class="px-4 py-2 text-sm border border-slate-600 rounded-md hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                    Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Podium (Top 3) -->
+        <div id="podium" class="mb-8">
+            <!-- Podium will be rendered here -->
+        </div>
+
+        <!-- Full Leaderboard -->
+        <div class="bg-slate-800 rounded-lg overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-700">
+                <h2 class="text-xl font-semibold text-emerald-400">Full Leaderboard</h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-slate-700">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                                Rank
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                                Player
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                                Total Score
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                                Bars
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
+                                Goals
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard" class="bg-slate-800 divide-y divide-slate-700">
+                        <!-- Results will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="hidden text-center py-12 text-slate-400">
+            <p class="text-lg">No participants yet</p>
+            <p class="text-sm">Join the event to start tracking progress!</p>
+        </div>
+
+        <!-- Refresh Button -->
+        <div class="mt-8 text-center">
+            <button 
+                onclick="loadResults()"
+                class="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-md font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            >
+                🔄 Refresh Results
+            </button>
+        </div>
+
+        <!-- Error/Success Messages -->
+        <div id="message" class="hidden fixed bottom-4 right-4 px-4 py-2 rounded-md shadow-lg"></div>
+    </div>
+
+    <script>
+        let eventId = null;
+
+        function showMessage(message, type = 'info') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.className = `fixed bottom-4 right-4 px-4 py-2 rounded-md shadow-lg ${
+                type === 'error' ? 'bg-red-600 text-white' : 
+                type === 'success' ? 'bg-emerald-600 text-white' : 
+                'bg-slate-700 text-slate-100'
+            }`;
+            messageDiv.classList.remove('hidden');
+            
+            setTimeout(() => {
+                messageDiv.classList.add('hidden');
+            }, 3000);
+        }
+
+        function getEventId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('event');
+        }
+
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/user');
+                if (!response.ok) {
+                    window.location.href = '/';
+                    return;
+                }
+                
+                eventId = getEventId();
+                if (!eventId) {
+                    window.location.href = '/events.html';
+                    return;
+                }
+                
+                await loadResults();
+            } catch (error) {
+                window.location.href = '/';
+            }
+        }
+
+        async function loadResults() {
+            try {
+                const response = await fetch(`/api/events/${eventId}/results`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load results');
+                }
+
+                const results = await response.json();
+                
+                if (results.length === 0) {
+                    document.querySelector('.bg-slate-800.rounded-lg').classList.add('hidden');
+                    document.getElementById('podium').classList.add('hidden');
+                    document.getElementById('noResults').classList.remove('hidden');
+                    return;
+                }
+
+                document.querySelector('.bg-slate-800.rounded-lg').classList.remove('hidden');
+                document.getElementById('noResults').classList.add('hidden');
+                
+                renderPodium(results.slice(0, 3));
+                renderLeaderboard(results);
+                
+            } catch (error) {
+                showMessage('Failed to load results', 'error');
+                console.error(error);
+            }
+        }
+
+        function renderPodium(topThree) {
+            const podium = document.getElementById('podium');
+            
+            if (topThree.length === 0) {
+                podium.classList.add('hidden');
+                return;
+            }
+            
+            podium.classList.remove('hidden');
+            
+            const medals = ['🥇', '🥈', '🥉'];
+            const positions = ['1st', '2nd', '3rd'];
+            
+            podium.innerHTML = `
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-emerald-400 mb-6">🏆 Top Performers</h2>
+                    <div class="flex justify-center items-end gap-4 max-w-2xl mx-auto">
+                        ${topThree.map((player, index) => `
+                            <div class="flex-1 text-center ${index === 0 ? 'order-2' : index === 1 ? 'order-1' : 'order-3'}">
+                                <div class="bg-slate-800 rounded-lg p-4 ${index === 0 ? 'border-2 border-emerald-500 transform scale-105' : ''}">
+                                    <div class="text-4xl mb-2">${medals[index]}</div>
+                                    <div class="text-lg font-semibold text-white">${player.username}</div>
+                                    <div class="text-2xl font-bold text-emerald-400 mt-2">${player.points}</div>
+                                    <div class="text-sm text-slate-400">${positions[index]} Place</div>
+                                    <div class="text-xs text-slate-500 mt-1">
+                                        ${player.bars_completed} bars • ${player.goals_completed} goals
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderLeaderboard(results) {
+            const leaderboard = document.getElementById('leaderboard');
+            
+            leaderboard.innerHTML = results.map((player, index) => {
+                const rankIcons = ['🥇', '🥈', '🥉'];
+                const rankIcon = index < 3 ? rankIcons[index] : '';
+                const rank = index + 1;
+                
+                return `
+                    <tr class="${index < 3 ? 'bg-slate-750' : ''}">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                            <span class="text-lg">${rankIcon}</span> #${rank}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-white">${player.username}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-lg font-bold text-emerald-400">${player.points}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                            ${player.bars_completed}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                            ${player.goals_completed}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function goBack() {
+            // Check if we came from progress page
+            if (document.referrer && document.referrer.includes('progress.html')) {
+                window.history.back();
+            } else {
+                window.location.href = '/events.html';
+            }
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                window.location.href = '/';
+            } catch (error) {
+                window.location.href = '/';
+            }
+        });
+
+        // Initialize
+        checkAuth();
+
+        // Auto-refresh every 15 seconds to keep results updated
+        setInterval(loadResults, 15000);
+    </script>
+</body>
+</html>
