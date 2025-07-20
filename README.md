@@ -1,22 +1,32 @@
-# 🍺 CruiseControl
+# CruiseControl
 
-A modern, Spotify-inspired bar crawl tracking application designed specifically for cruise ships. Keep track of your bar-hopping journey, complete challenges, and compete with friends - all without relying on the ship's Wi-Fi.
+A no-password, Tailwind-styled, SQLite-backed bar crawl tracker designed specifically for cruise ships. Track your progress through ship bars and complete fun challenges along the way.
 
-## 🌟 Features
+## Features
 
-- **Modern UI**: Spotify-inspired dark theme with mobile-first design
-- **Event System**: Create and join timed bar crawl events
-- **Event Progress**: Track bars visited and goals completed within events
-- **Event Results**: View event rankings and podium displays
-- **Admin Controls**: Create events, manage users, and track progress
-- **Offline-First**: Works through local network, no ship Wi-Fi needed
+- **No-Password Authentication**: Simple username-based login system
+- **Bar Crawl Tracking**: Mark off bars as you visit them
+- **Challenge Goals**: Complete fun drinking challenges at each location
+- **Event Management**: Create and join timed bar crawl events
+- **Real-time Progress**: Track your progress in real-time during events
+- **Admin Panel**: Manage bars, goals, and events through admin interface
+- **Offline-First**: Works without internet connection once loaded
+- **Responsive Design**: Optimized for mobile and desktop use
 
-## 🚀 Quick Start
+## Technology Stack
+
+- **Backend**: Node.js with Express.js
+- **Database**: SQLite with custom database wrapper
+- **Frontend**: HTML, CSS (Tailwind), JavaScript
+- **Authentication**: Session-based with express-session
+- **Styling**: Tailwind CSS for modern, responsive design
+
+## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/roshan-c/cruisecontrol.git
-cd cruisecontrol
+git clone <repository-url>
+cd CruiseControl
 ```
 
 2. Install dependencies:
@@ -29,160 +39,137 @@ npm install
 npm start
 ```
 
-4. Access the application at `http://localhost:3000`
+The application will be available at `http://localhost:3000`
 
-## 🐳 Docker Deployment
+## Usage
 
-### Using Docker Compose (Recommended)
+### Getting Started
 
-1. Make sure you have Docker and Docker Compose installed
-2. Clone the repository and navigate to the project directory
-3. Build and start the containers:
+1. Open your browser and navigate to `http://localhost:3000`
+2. Enter a username to create an account or log in
+3. Browse available events or create a new one
+4. Join an event to start tracking your bar crawl progress
+
+### Managing Bars and Goals
+
+The application includes a management tool for customizing bars and goals:
+
 ```bash
-docker-compose up -d
+npm run manage
 ```
-4. Access the application at `http://localhost:3000`
 
-To stop the application:
+This interactive tool allows you to:
+- Remove all bars and goals
+- Import bars from `bars.csv`
+- Import goals from `goals.csv`
+- Manage the database content
+
+### CSV Import Format
+
+**bars.csv**: One bar name per line
+```
+Blaze
+Boleros
+Bow & Stern Pub
+Suite Lounge
+```
+
+**goals.csv**: One goal per line
+```
+Down your drink in under 15 seconds
+Order a drink in another language
+Take a selfie with the bartender
+```
+
+## Project Structure
+
+```
+CruiseControl/
+├── server.js          # Main Express server
+├── database.js        # SQLite database wrapper
+├── manage.js          # Management CLI tool
+├── package.json       # Dependencies and scripts
+├── bars.csv          # Default bar locations
+├── goals.csv         # Default challenge goals
+├── public/           # Static frontend files
+│   ├── index.html    # Main application page
+│   ├── events.html   # Events management page
+│   ├── progress.html # Progress tracking page
+│   └── results.html  # Results and statistics page
+└── cruise.db         # SQLite database file
+```
+
+## Database Schema
+
+- **users**: User accounts with username and admin status
+- **events**: Bar crawl events with duration and status
+- **participants**: Event participation tracking
+- **progress**: Individual progress on bars and goals
+- **bars**: Available bar locations
+- **goals**: Available challenge goals
+
+## API Endpoints
+
+### Authentication
+- `POST /api/register` - Register new user
+- `POST /api/login` - Login user
+- `POST /api/logout` - Logout user
+- `GET /api/user` - Get current user info
+
+### Events
+- `GET /api/events` - Get active events
+- `POST /api/events/:id/join` - Join an event
+- `GET /api/events/:id/progress` - Get event progress
+- `POST /api/events/:id/progress` - Update progress
+
+### Data
+- `GET /api/bars` - Get available bars
+- `GET /api/goals` - Get available goals
+
+## Development
+
+### Running in Development Mode
+
 ```bash
-docker-compose down
+npm run dev
 ```
 
-### Manual Docker Build
+### Database Management
 
-If you prefer to run Docker commands manually:
+The application automatically creates the database and tables on first run. Use the management tool for data operations:
 
-1. Build the Docker image:
 ```bash
-docker build -t cruisecontrol .
+node manage.js
 ```
 
-2. Run the container:
-```bash
-docker run -p 3000:3000 -d cruisecontrol
-```
+### Adding Custom Bars and Goals
 
-## 🛳️ Cruise Ship Deployment
+1. Create `bars.csv` and `goals.csv` files in the project root
+2. Add your custom bars and goals (one per line)
+3. Run the management tool to import them
 
-### Method 1: Using Android Phone with Termux
+## Deployment
 
-1. Install Termux from F-Droid (preferred) or Google Play Store
-2. Set up Node.js environment in Termux:
-```bash
-pkg update
-pkg install nodejs
-```
+The application is designed to run on any Node.js hosting platform:
 
-3. Clone and set up the application:
-```bash
-git clone https://github.com/roshan-c/cruisecontrol.git
-cd cruisecontrol
-npm install
-```
+1. Ensure Node.js is installed on your server
+2. Upload the project files
+3. Run `npm install` to install dependencies
+4. Start the server with `npm start`
+5. Configure your web server to proxy requests to port 3000
 
-4. Start the server:
-```bash
-npm start
-```
+## License
 
-5. Enable phone's hotspot
-6. Connect other devices to the hotspot
-7. Access the app using the phone's hotspot IP (usually `192.168.43.1:3000`)
+MIT License - see LICENSE file for details
 
-### Method 2: Using iPhone
+## Contributing
 
-1. Install a Node.js server app from the App Store (like "Server for Node")
-2. Import the project files
-3. Start the server through the app
-4. Enable personal hotspot
-5. Connect other devices to the hotspot
-6. Access using the iPhone's hotspot IP address
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-## 💻 Development
+## Support
 
-### Prerequisites
-
-- Node.js (v14 or higher)
-- npm (v6 or higher)
-
-### Environment Setup
-
-1. Fork and clone the repository
-2. Install dependencies: `npm install`
-3. Start development server: `npm run dev`
-
-### Project Structure
-
-```
-cruisecontrol/
-├── config/             # Configuration files
-│   └── db.json        # JSON database file
-├── middleware/        # Express middleware
-│   └── auth.js       # Authentication middleware
-├── models/           # Data models
-│   └── db.js        # Database operations
-├── public/          # Static files
-│   ├── css/        # Stylesheets
-│   └── js/         # Client-side JavaScript
-├── routes/         # Express routes
-│   ├── admin.js   # Admin routes
-│   ├── auth.js    # Authentication routes
-│   └── user.js    # User routes
-├── views/         # HTML templates
-│   ├── admin.html
-│   ├── home.html
-│   ├── index.html
-│   ├── login.html
-│   └── signup.html
-├── package.json
-├── README.md
-└── server.js      # Application entry point
-```
-
-## 🎯 Features in Detail
-
-### User Features
-- Account creation and authentication
-- Join and participate in bar crawl events
-- Track event-specific progress and points
-- Complete event challenges and goals
-- View event rankings and results
-- Mobile-responsive interface
-
-### Admin Features
-- User management
-- Create and manage timed events
-- Set available bars and goals for events
-- End events and view detailed results
-- Adjust user points and manage accounts
-
-## 🎨 UI/UX
-
-- Spotify-inspired dark theme
-- Mobile-first responsive design
-- Smooth animations and transitions
-- Intuitive navigation
-- Clear visual feedback
-
-## 🔒 Security Notes
-
-- This is a local network application
-- Uses basic session-based authentication
-- Passwords are stored in plaintext (suitable for casual use)
-- For enhanced security in production:
-  - Implement password hashing
-  - Add HTTPS
-  - Implement rate limiting
-  - Add input validation
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🙏 Acknowledgments
-
-- My Dad for giving me the idea
-
-## 📧 Contact
-
-- My Twitter - [@r09han](https://twitter.com/r09han)
+For issues and questions, please open an issue on the project repository. 
