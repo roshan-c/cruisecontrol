@@ -18,7 +18,8 @@ function showMenu() {
   console.log('3. Remove all goals');
   console.log('4. Import bars from bars.csv');
   console.log('5. Import goals from goals.csv');
-  console.log('6. Exit');
+  console.log('6. Make user admin');
+  console.log('7. Exit');
   console.log('');
 }
 
@@ -131,12 +132,43 @@ async function importGoalsFromCSV() {
   }
 }
 
+async function makeUserAdmin() {
+  try {
+    const username = await question('Enter username to make admin: ');
+    
+    if (!username.trim()) {
+      console.log('❌ Username cannot be empty');
+      return;
+    }
+
+    // Check if user exists
+    const user = await db.get('SELECT * FROM users WHERE username = ?', [username.trim()]);
+    
+    if (!user) {
+      console.log('❌ User not found');
+      return;
+    }
+
+    if (user.is_admin) {
+      console.log('⚠️  User is already an admin');
+      return;
+    }
+
+    // Update user to admin
+    await db.run('UPDATE users SET is_admin = 1 WHERE username = ?', [username.trim()]);
+    console.log(`✅ Successfully made ${username} an admin`);
+    
+  } catch (error) {
+    console.error('❌ Error making user admin:', error.message);
+  }
+}
+
 async function main() {
   console.log('🍺 CruiseControl Management Tool Starting...');
   
   while (true) {
     showMenu();
-    const choice = await question('Select an option (1-6): ');
+    const choice = await question('Select an option (1-7): ');
 
     switch (choice.trim()) {
       case '1':
@@ -175,12 +207,16 @@ async function main() {
         break;
 
       case '6':
+        await makeUserAdmin();
+        break;
+
+      case '7':
         console.log('👋 Goodbye!');
         process.exit(0);
         break;
 
       default:
-        console.log('❌ Invalid option. Please choose 1-6.');
+        console.log('❌ Invalid option. Please choose 1-7.');
         break;
     }
 

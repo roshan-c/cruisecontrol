@@ -44,7 +44,10 @@
             <!-- Bars Section -->
             <div>
                 <h2 class="text-2xl font-semibold text-emerald-400 mb-4">🍻 Bars (10 pts each)</h2>
-                <div class="space-y-2" id="barsList">
+                <div class="w-full bg-slate-700 rounded-full h-4 mb-4">
+                  <div id="barsProgressBar" class="bg-emerald-500 h-4 rounded-full transition-all duration-300" style="width:0%"></div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="barsList">
                     <!-- Bars will be loaded here -->
                 </div>
             </div>
@@ -52,7 +55,10 @@
             <!-- Goals Section -->
             <div>
                 <h2 class="text-2xl font-semibold text-emerald-400 mb-4">🎯 Goals (10 pts each)</h2>
-                <div class="space-y-2" id="goalsList">
+                <div class="w-full bg-slate-700 rounded-full h-4 mb-4">
+                  <div id="goalsProgressBar" class="bg-emerald-500 h-4 rounded-full transition-all duration-300" style="width:0%"></div>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-3" id="goalsList">
                     <!-- Goals will be loaded here -->
                 </div>
             </div>
@@ -157,36 +163,50 @@
             barsList.innerHTML = bars.map(bar => {
                 const isCompleted = userProgress.has(`bar-${bar.name}`);
                 return `
-                    <label class="flex items-center p-3 bg-slate-800 rounded-md hover:bg-slate-700 cursor-pointer transition-colors">
-                        <input 
-                            type="checkbox" 
-                            ${isCompleted ? 'checked' : ''}
-                            onchange="toggleProgress('bar', '${bar.name.replace(/'/g, "\\'")}')"
-                            class="w-5 h-5 text-emerald-600 bg-gray-800 border-gray-600 rounded focus:ring-emerald-500 focus:ring-2"
-                        />
-                        <span class="ml-3 text-white ${isCompleted ? 'line-through text-slate-400' : ''}">${bar.name}</span>
-                        ${isCompleted ? '<span class="ml-auto text-emerald-400 font-semibold">+10</span>' : ''}
+                    <label class="flex flex-col items-start p-4 bg-slate-800 rounded-lg hover:bg-slate-700 cursor-pointer transition-colors min-h-[90px] shadow-md">
+                        <div class="flex items-center w-full">
+                            <input 
+                                type="checkbox" 
+                                ${isCompleted ? 'checked' : ''}
+                                onchange="toggleProgress('bar', '${bar.name.replace(/'/g, "\\'")}')"
+                                class="w-5 h-5 text-emerald-600 bg-gray-800 border-gray-600 rounded focus:ring-emerald-500 focus:ring-2"
+                            />
+                            <span class="ml-3 text-white text-base font-medium ${isCompleted ? 'line-through text-slate-400' : ''}">${bar.name}</span>
+                        </div>
+                        ${isCompleted ? '<span class="mt-2 text-emerald-400 font-semibold">+10</span>' : ''}
                     </label>
                 `;
             }).join('');
+
+            // Update bars progress bar
+            const barsCompleted = bars.filter(bar => userProgress.has(`bar-${bar.name}`)).length;
+            const barsPercent = bars.length > 0 ? Math.round((barsCompleted / bars.length) * 100) : 0;
+            document.getElementById('barsProgressBar').style.width = barsPercent + '%';
 
             // Render goals
             const goalsList = document.getElementById('goalsList');
             goalsList.innerHTML = goals.map(goal => {
                 const isCompleted = userProgress.has(`goal-${goal.name}`);
                 return `
-                    <label class="flex items-center p-3 bg-slate-800 rounded-md hover:bg-slate-700 cursor-pointer transition-colors">
-                        <input 
-                            type="checkbox" 
-                            ${isCompleted ? 'checked' : ''}
-                            onchange="toggleProgress('goal', '${goal.name.replace(/'/g, "\\'")}')"
-                            class="w-5 h-5 text-emerald-600 bg-gray-800 border-gray-600 rounded focus:ring-emerald-500 focus:ring-2"
-                        />
-                        <span class="ml-3 text-white ${isCompleted ? 'line-through text-slate-400' : ''}">${goal.name}</span>
-                        ${isCompleted ? '<span class="ml-auto text-emerald-400 font-semibold">+10</span>' : ''}
+                    <label class="flex flex-col items-start p-4 bg-slate-800 rounded-lg hover:bg-slate-700 cursor-pointer transition-colors min-h-[90px] shadow-md">
+                        <div class="flex items-center w-full">
+                            <input 
+                                type="checkbox" 
+                                ${isCompleted ? 'checked' : ''}
+                                onchange="toggleProgress('goal', '${goal.name.replace(/'/g, "\\'")}')"
+                                class="w-5 h-5 text-emerald-600 bg-gray-800 border-gray-600 rounded focus:ring-emerald-500 focus:ring-2"
+                            />
+                            <span class="ml-3 text-white text-base font-medium ${isCompleted ? 'line-through text-slate-400' : ''}">${goal.name}</span>
+                        </div>
+                        ${isCompleted ? '<span class="mt-2 text-emerald-400 font-semibold">+10</span>' : ''}
                     </label>
                 `;
             }).join('');
+
+            // Update goals progress bar
+            const goalsCompleted = goals.filter(goal => userProgress.has(`goal-${goal.name}`)).length;
+            const goalsPercent = goals.length > 0 ? Math.round((goalsCompleted / goals.length) * 100) : 0;
+            document.getElementById('goalsProgressBar').style.width = goalsPercent + '%';
         }
 
         function updateScore() {
