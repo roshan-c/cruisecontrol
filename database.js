@@ -57,27 +57,6 @@ class Database {
 
       // Insert admin user if not exists
       this.db.run(`INSERT OR IGNORE INTO users (username, is_admin) VALUES ('admin', 1)`);
-
-      // Insert placeholder bars
-      const bars = [
-        'Postern Gate', 'Stone Roses', 'Yates', 'Lowthers', 'Old Bank', 'Tank and Paddle',
-        'Slug and Lettuce', 'Stonebow', 'Golden Fleece', 'Brew York', 'Keystones', 'Fart Bar'
-      ];
-      
-      bars.forEach(bar => {
-        this.db.run(`INSERT OR IGNORE INTO bars (name) VALUES (?)`, [bar]);
-      });
-
-      // Insert placeholder goals
-      const goals = [
-        'Down your drink', 'Order in another language', 'Selfie with bartender',
-        'Finish in 10 s', 'Opposite colour drink', 'Same colour drink',
-        'Ask for John Pork', 'Random fact', 'Exchange contact info', 'Take shot from flask'
-      ];
-      
-      goals.forEach(goal => {
-        this.db.run(`INSERT OR IGNORE INTO goals (name) VALUES (?)`, [goal]);
-      });
     });
   }
 

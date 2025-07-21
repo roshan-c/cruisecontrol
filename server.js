@@ -5,6 +5,20 @@ const db = require('./database');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`HTTP server on port ${PORT}`);
+});
+
+/* Bonjour service
+const { Bonjour } = require('bonjour-service');
+const bonjour = new Bonjour();
+
+bonjour.publish({
+  name: 'CruiseControl',
+  type: 'http',
+  port: PORT,
+})
+*/
 
 // Middleware
 app.use(express.json());
@@ -298,9 +312,4 @@ app.get('/api/events/:id/results', requireAuth, async (req, res) => {
 // Serve static files
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`CruiseControl server running on http://0.0.0.0:${PORT}`);
-  console.log(`Share this IP with your friends: http://[YOUR_PHONE_IP]:${PORT}`);
 });
