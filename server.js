@@ -342,6 +342,11 @@ app.get('/api/events/:id/results', requireAuth, async (req, res) => {
 });
 
 // Serve static files
+app.get('/tailwind.css', (req, res) => {
+  res.type('text/css');
+  res.sendFile(path.join(__dirname, 'public', 'tailwind.css'));
+});
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
