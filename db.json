@@ -12,6 +12,11 @@
     }
   ],
   "events": [
+    {
+      "id": 1,
+      "name": "poop cruise",
+      "duration_minutes": 77
+    }
   ],
   "participants": [
     {
@@ -26,12 +31,6 @@
     }
   ],
   "progress": [
-    {
-      "id": 1,
-      "participant_id": 1,
-      "type": "bar",
-      "item_name": "Bow & Stern Pub"
-    },
     {
       "id": 2,
       "participant_id": 1,
@@ -211,6 +210,12 @@
       "participant_id": 2,
       "type": "goal",
       "item_name": "Finish your drink standing on one foot"
+    },
+    {
+      "id": 32,
+      "participant_id": 1,
+      "type": "bar",
+      "item_name": "Bow & Stern Pub"
     }
   ],
   "bars": [
