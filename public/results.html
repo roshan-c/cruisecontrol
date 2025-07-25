@@ -177,7 +177,7 @@
             podium.innerHTML = `
                 <div class="text-center mb-8">
                     <h2 class="text-2xl font-bold text-emerald-400 mb-6">🏆 Top Performers</h2>
-                    <div class="flex justify-center items-end gap-4 max-w-2xl mx-auto">
+                    <div class="flex flex-col md:flex-row justify-center items-end gap-4 max-w-2xl mx-auto">
                         ${topThree.map((player, index) => `
                             <div class="flex-1 text-center ${index === 0 ? 'order-2' : index === 1 ? 'order-1' : 'order-3'}">
                                 <div class="bg-slate-800 rounded-lg p-4 ${index === 0 ? 'border-2 border-emerald-500 transform scale-105' : ''}">
