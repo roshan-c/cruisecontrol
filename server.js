@@ -22,6 +22,15 @@ bonjour.publish({
 
 // Middleware
 app.use(express.json());
+// Force correct Content-Type for CSS
+app.use((req, res, next) => {
+  if (req.path.endsWith('.css')) {
+    res.type('text/css');
+  }
+  next();
+});
+
+// Serve static files
 app.use(express.static('public'));
 app.use(session({
   secret: 'cruise-control-secret',
