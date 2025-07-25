@@ -1,100 +1,182 @@
-const sqlite3 = require('sqlite3').verbose();
+const fs = require('fs');
 const path = require('path');
+
+const DB_PATH = path.join(__dirname, 'db.json');
+
+// Initial structure for the JSON database
+const INITIAL_DB = {
+  users: [
+    { id: 1, username: 'admin', points: 0, is_admin: true }
+  ],
+  events: [],
+  participants: [],
+  progress: [],
+  bars: [],
+  goals: []
+};
 
 class Database {
   constructor() {
-    this.db = new sqlite3.Database(path.join(__dirname, 'cruise.db'));
-    this.init();
+    this._ensureDbFile();
+    this._load();
+    this._nextIds = this._computeNextIds();
   }
 
-  init() {
-    this.db.serialize(() => {
-      // Users table
-      this.db.run(`CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE NOT NULL,
-        points INTEGER DEFAULT 0,
-        is_admin BOOLEAN DEFAULT 0
-      )`);
-
-      // Events table
-      this.db.run(`CREATE TABLE IF NOT EXISTS events (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        duration_minutes INTEGER NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        ended_at DATETIME
-      )`);
-
-      // Participants table
-      this.db.run(`CREATE TABLE IF NOT EXISTS participants (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER REFERENCES users(id),
-        event_id INTEGER REFERENCES events(id),
-        joined_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )`);
-
-      // Progress table
-      this.db.run(`CREATE TABLE IF NOT EXISTS progress (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        participant_id INTEGER REFERENCES participants(id),
-        type TEXT CHECK(type IN ('bar','goal')),
-        item_name TEXT,
-        completed_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )`);
-
-      // Bars table
-      this.db.run(`CREATE TABLE IF NOT EXISTS bars (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL
-      )`);
-
-      // Goals table
-      this.db.run(`CREATE TABLE IF NOT EXISTS goals (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL
-      )`);
-
-      // Insert admin user if not exists
-      this.db.run(`INSERT OR IGNORE INTO users (username, is_admin) VALUES ('admin', 1)`);
-    });
+  _ensureDbFile() {
+    if (!fs.existsSync(DB_PATH)) {
+      fs.writeFileSync(DB_PATH, JSON.stringify(INITIAL_DB, null, 2));
+    }
   }
 
-  // Promisify database operations
-  get(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.get(sql, params, (err, row) => {
-        if (err) reject(err);
-        else resolve(row);
+  _load() {
+    this.db = JSON.parse(fs.readFileSync(DB_PATH, 'utf8'));
+  }
+
+  _save() {
+    fs.writeFileSync(DB_PATH, JSON.stringify(this.db, null, 2));
+  }
+
+  _computeNextIds() {
+    // Find the next ID for each table
+    const nextIds = {};
+    for (const key of Object.keys(INITIAL_DB)) {
+      const arr = this.db[key] || [];
+      nextIds[key] = arr.length > 0 ? Math.max(...arr.map(x => x.id || 0)) + 1 : 1;
+    }
+    return nextIds;
+  }
+
+  // Simulate SQL SELECT ... WHERE ... LIMIT 1
+  async get(sql, params = []) {
+    this._load();
+    const { table, where } = this._parseSql(sql, params);
+    const row = (this.db[table] || []).find(where);
+    return row ? { ...row } : undefined;
+  }
+
+  // Simulate SQL SELECT ...
+  async all(sql, params = []) {
+    this._load();
+    const { table, where, orderBy } = this._parseSql(sql, params);
+    let rows = (this.db[table] || []).filter(where);
+    if (orderBy) {
+      rows = rows.sort((a, b) => {
+        if (a[orderBy] < b[orderBy]) return -1;
+        if (a[orderBy] > b[orderBy]) return 1;
+        return 0;
       });
-    });
+    }
+    return rows.map(row => ({ ...row }));
   }
 
-  all(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.all(sql, params, (err, rows) => {
-        if (err) reject(err);
-        else resolve(rows);
-      });
-    });
+  // Simulate SQL INSERT, UPDATE, DELETE
+  async run(sql, params = []) {
+    this._load();
+    const { table, action, where, set, insertValues } = this._parseSql(sql, params);
+    let result = { id: null, changes: 0 };
+    if (action === 'insert') {
+      const newRow = { id: this._nextIds[table]++, ...insertValues };
+      this.db[table].push(newRow);
+      result.id = newRow.id;
+      result.changes = 1;
+    } else if (action === 'update') {
+      let changes = 0;
+      for (let row of this.db[table]) {
+        if (where(row)) {
+          Object.assign(row, set);
+          changes++;
+        }
+      }
+      result.changes = changes;
+    } else if (action === 'delete') {
+      const before = this.db[table].length;
+      this.db[table] = this.db[table].filter(row => !where(row));
+      result.changes = before - this.db[table].length;
+    }
+    this._save();
+    return result;
   }
 
-  run(sql, params = []) {
-    return new Promise((resolve, reject) => {
-      this.db.run(sql, params, function(err) {
-        if (err) reject(err);
-        else resolve({ id: this.lastID, changes: this.changes });
-      });
-    });
+  // No-op for JSON
+  async close() {
+    return;
   }
 
-  close() {
-    return new Promise((resolve, reject) => {
-      this.db.close((err) => {
-        if (err) reject(err);
-        else resolve();
+  // --- SQL parser helpers ---
+  _parseSql(sql, params) {
+    // This is a minimal parser for the specific queries used in this app
+    sql = sql.trim();
+    const lower = sql.toLowerCase();
+    if (lower.startsWith('select')) {
+      // SELECT ... FROM table WHERE ... ORDER BY ...
+      const table = sql.match(/from\s+(\w+)/i)[1];
+      let where = () => true;
+      let orderBy = null;
+      if (/where/i.test(sql)) {
+        const whereClause = sql.split(/where/i)[1].split(/order by/i)[0].trim();
+        where = this._buildWhere(whereClause, params);
+      }
+      if (/order by/i.test(sql)) {
+        orderBy = sql.split(/order by/i)[1].trim().split(/\s+/)[0];
+      }
+      return { table, where, orderBy };
+    } else if (lower.startsWith('insert')) {
+      // INSERT INTO table (col1, col2) VALUES (?, ?)
+      const table = sql.match(/into\s+(\w+)/i)[1];
+      const cols = sql.match(/\(([^)]+)\)/)[1].split(',').map(s => s.trim());
+      const insertValues = {};
+      cols.forEach((col, i) => {
+        insertValues[col] = params[i];
       });
+      return { table, action: 'insert', insertValues };
+    } else if (lower.startsWith('update')) {
+      // UPDATE table SET col1 = ? WHERE ...
+      const table = sql.match(/update\s+(\w+)/i)[1];
+      const setClause = sql.match(/set\s+([^w]+)where/i)[1].trim();
+      const set = this._buildSet(setClause, params);
+      const whereClause = sql.split(/where/i)[1].trim();
+      const where = this._buildWhere(whereClause, params.slice(Object.keys(set).length));
+      return { table, action: 'update', set, where };
+    } else if (lower.startsWith('delete')) {
+      // DELETE FROM table WHERE ...
+      const table = sql.match(/from\s+(\w+)/i)[1];
+      const whereClause = sql.split(/where/i)[1].trim();
+      const where = this._buildWhere(whereClause, params);
+      return { table, action: 'delete', where };
+    }
+    throw new Error('Unsupported SQL: ' + sql);
+  }
+
+  _buildWhere(whereClause, params) {
+    // Only supports simple equality and IN checks
+    if (!whereClause) return () => true;
+    let idx = 0;
+    if (/in \(/i.test(whereClause)) {
+      // e.g. type IN ("bar", "goal")
+      const [col, inVals] = whereClause.match(/(\w+) in \(([^)]+)\)/i).slice(1, 3);
+      const values = inVals.split(',').map(s => s.replace(/['"]/g, '').trim());
+      return row => values.includes(row[col]);
+    } else if (/=/.test(whereClause)) {
+      // e.g. id = ? AND type = ?
+      const conditions = whereClause.split(/and/i).map(s => s.trim());
+      return row => conditions.every(cond => {
+        const [col, op, val] = cond.split(/\s*=\s*/);
+        const param = params[idx++];
+        return row[col] == param;
+      });
+    }
+    return () => true;
+  }
+
+  _buildSet(setClause, params) {
+    // e.g. col1 = ?, col2 = ?
+    const set = {};
+    const assignments = setClause.split(',').map(s => s.trim());
+    assignments.forEach((assign, i) => {
+      const [col] = assign.split('=');
+      set[col.trim()] = params[i];
     });
+    return set;
   }
 }
 

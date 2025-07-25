@@ -56,40 +56,47 @@ const requireAdmin = async (req, res, next) => {
   }
 };
 
-// Routes
+// Helper to reload DB for each request (to get latest data)
+function getDb() {
+  // database.js exports a singleton, but we reload the file for latest data
+  return require('./database');
+}
+
+// Replace all db.get, db.all, db.run usages with in-memory logic for JOINs/aggregates
+// ---
+// Register, Login, Logout, Get current user: (no change needed)
+// ---
 
 // Register user (username only)
 app.post('/api/register', async (req, res) => {
   const { username } = req.body;
-  
   if (!username) {
     return res.status(400).json({ error: 'Username required' });
   }
-
   try {
+    const db = getDb();
+    const users = await db.all('SELECT * FROM users');
+    if (users.find(u => u.username === username)) {
+      return res.status(400).json({ error: 'Username already exists' });
+    }
     const result = await db.run('INSERT INTO users (username) VALUES (?)', [username]);
     req.session.userId = result.id;
     req.session.username = username;
     res.json({ success: true, userId: result.id, username });
   } catch (error) {
-    if (error.code === 'SQLITE_CONSTRAINT') {
-      res.status(400).json({ error: 'Username already exists' });
-    } else {
-      res.status(500).json({ error: 'Database error' });
-    }
+    res.status(500).json({ error: 'Database error' });
   }
 });
 
 // Login user (username only)
 app.post('/api/login', async (req, res) => {
   const { username } = req.body;
-  
   if (!username) {
     return res.status(400).json({ error: 'Username required' });
   }
-
   try {
-    const user = await db.get('SELECT id, username, is_admin FROM users WHERE username = ?', [username]);
+    const db = getDb();
+    const user = (await db.all('SELECT * FROM users')).find(u => u.username === username);
     if (user) {
       req.session.userId = user.id;
       req.session.username = user.username;
@@ -104,15 +111,21 @@ app.post('/api/login', async (req, res) => {
 
 // Logout
 app.post('/api/logout', (req, res) => {
-  req.session.destroy();
-  res.json({ success: true });
+  req.session.destroy(() => {
+    res.json({ success: true });
+  });
 });
 
 // Get current user
 app.get('/api/user', requireAuth, async (req, res) => {
   try {
-    const user = await db.get('SELECT id, username, is_admin FROM users WHERE id = ?', [req.session.userId]);
-    res.json(user);
+    const db = getDb();
+    const user = (await db.all('SELECT * FROM users')).find(u => u.id === req.session.userId);
+    if (user) {
+      res.json({ id: user.id, username: user.username, is_admin: user.is_admin });
+    } else {
+      res.status(404).json({ error: 'User not found' });
+    }
   } catch (error) {
     res.status(500).json({ error: 'Database error' });
   }
@@ -121,18 +134,17 @@ app.get('/api/user', requireAuth, async (req, res) => {
 // Get active events
 app.get('/api/events', requireAuth, async (req, res) => {
   try {
-    const events = await db.all(`
-      SELECT e.*, 
-             COUNT(p.id) as participant_count,
-             CASE WHEN p2.user_id IS NOT NULL THEN 1 ELSE 0 END as is_joined
-      FROM events e
-      LEFT JOIN participants p ON e.id = p.event_id
-      LEFT JOIN participants p2 ON e.id = p2.event_id AND p2.user_id = ?
-      WHERE e.ended_at IS NULL
-      GROUP BY e.id
-    `, [req.session.userId]);
-    
-    res.json(events);
+    const db = getDb();
+    const userId = req.session.userId;
+    const events = await db.all('SELECT * FROM events WHERE ended_at IS NULL');
+    const participants = await db.all('SELECT * FROM participants');
+    const userParticipants = participants.filter(p => p.user_id === userId);
+    const result = events.map(e => {
+      const participant_count = participants.filter(p => p.event_id === e.id).length;
+      const is_joined = userParticipants.some(p => p.event_id === e.id) ? 1 : 0;
+      return { ...e, participant_count, is_joined };
+    });
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: 'Database error' });
   }
@@ -140,21 +152,17 @@ app.get('/api/events', requireAuth, async (req, res) => {
 
 // Join event
 app.post('/api/events/:id/join', requireAuth, async (req, res) => {
-  const eventId = req.params.id;
-  
+  const eventId = Number(req.params.id);
   try {
-    // Check if event exists and is active
-    const event = await db.get('SELECT * FROM events WHERE id = ? AND ended_at IS NULL', [eventId]);
+    const db = getDb();
+    const event = (await db.all('SELECT * FROM events WHERE ended_at IS NULL')).find(e => e.id === eventId);
     if (!event) {
       return res.status(404).json({ error: 'Event not found or ended' });
     }
-
-    // Check if already joined
-    const existing = await db.get('SELECT * FROM participants WHERE user_id = ? AND event_id = ?', [req.session.userId, eventId]);
-    if (existing) {
+    const participants = await db.all('SELECT * FROM participants');
+    if (participants.some(p => p.user_id === req.session.userId && p.event_id === eventId)) {
       return res.status(400).json({ error: 'Already joined this event' });
     }
-
     await db.run('INSERT INTO participants (user_id, event_id) VALUES (?, ?)', [req.session.userId, eventId]);
     res.json({ success: true });
   } catch (error) {
@@ -165,6 +173,7 @@ app.post('/api/events/:id/join', requireAuth, async (req, res) => {
 // Get bars and goals
 app.get('/api/bars', requireAuth, async (req, res) => {
   try {
+    const db = getDb();
     const bars = await db.all('SELECT * FROM bars ORDER BY name');
     res.json(bars);
   } catch (error) {
@@ -174,6 +183,7 @@ app.get('/api/bars', requireAuth, async (req, res) => {
 
 app.get('/api/goals', requireAuth, async (req, res) => {
   try {
+    const db = getDb();
     const goals = await db.all('SELECT * FROM goals ORDER BY name');
     res.json(goals);
   } catch (error) {
@@ -183,15 +193,15 @@ app.get('/api/goals', requireAuth, async (req, res) => {
 
 // Get progress for event
 app.get('/api/events/:id/progress', requireAuth, async (req, res) => {
-  const eventId = req.params.id;
-  
+  const eventId = Number(req.params.id);
   try {
-    const participant = await db.get('SELECT id FROM participants WHERE user_id = ? AND event_id = ?', [req.session.userId, eventId]);
+    const db = getDb();
+    const participants = await db.all('SELECT * FROM participants');
+    const participant = participants.find(p => p.user_id === req.session.userId && p.event_id === eventId);
     if (!participant) {
       return res.status(404).json({ error: 'Not participating in this event' });
     }
-
-    const progress = await db.all('SELECT * FROM progress WHERE participant_id = ?', [participant.id]);
+    const progress = (await db.all('SELECT * FROM progress')).filter(pr => pr.participant_id === participant.id);
     res.json(progress);
   } catch (error) {
     res.status(500).json({ error: 'Database error' });
@@ -200,28 +210,24 @@ app.get('/api/events/:id/progress', requireAuth, async (req, res) => {
 
 // Toggle progress (bar or goal)
 app.post('/api/events/:id/progress', requireAuth, async (req, res) => {
-  const eventId = req.params.id;
+  const eventId = Number(req.params.id);
   const { type, itemName } = req.body;
-  
   if (!type || !itemName || !['bar', 'goal'].includes(type)) {
     return res.status(400).json({ error: 'Invalid type or itemName' });
   }
-
   try {
-    const participant = await db.get('SELECT id FROM participants WHERE user_id = ? AND event_id = ?', [req.session.userId, eventId]);
+    const db = getDb();
+    const participants = await db.all('SELECT * FROM participants');
+    const participant = participants.find(p => p.user_id === req.session.userId && p.event_id === eventId);
     if (!participant) {
       return res.status(404).json({ error: 'Not participating in this event' });
     }
-
-    // Check if already completed
-    const existing = await db.get('SELECT * FROM progress WHERE participant_id = ? AND type = ? AND item_name = ?', [participant.id, type, itemName]);
-    
+    const progress = await db.all('SELECT * FROM progress');
+    const existing = progress.find(pr => pr.participant_id === participant.id && pr.type === type && pr.item_name === itemName);
     if (existing) {
-      // Remove progress (unchecking)
       await db.run('DELETE FROM progress WHERE id = ?', [existing.id]);
       res.json({ success: true, action: 'removed' });
     } else {
-      // Add progress (checking)
       await db.run('INSERT INTO progress (participant_id, type, item_name) VALUES (?, ?, ?)', [participant.id, type, itemName]);
       res.json({ success: true, action: 'added' });
     }
@@ -230,18 +236,21 @@ app.post('/api/events/:id/progress', requireAuth, async (req, res) => {
   }
 });
 
-// Admin: Create event
+// Admin: Create event (no change needed except for ending all active events)
 app.post('/api/admin/events', requireAdmin, async (req, res) => {
   const { name, durationMinutes } = req.body;
-  
   if (!name || !durationMinutes) {
     return res.status(400).json({ error: 'Name and duration required' });
   }
-
   try {
-    // End any existing active events (MVP: one active event max)
-    await db.run('UPDATE events SET ended_at = CURRENT_TIMESTAMP WHERE ended_at IS NULL');
-    
+    const db = getDb();
+    // End all active events
+    const events = await db.all('SELECT * FROM events');
+    for (const event of events) {
+      if (!event.ended_at) {
+        await db.run('UPDATE events SET ended_at = ? WHERE id = ?', [new Date().toISOString(), event.id]);
+      }
+    }
     const result = await db.run('INSERT INTO events (name, duration_minutes) VALUES (?, ?)', [name, durationMinutes]);
     res.json({ success: true, eventId: result.id });
   } catch (error) {
@@ -251,34 +260,44 @@ app.post('/api/admin/events', requireAdmin, async (req, res) => {
 
 // Admin: End event
 app.post('/api/admin/events/:id/end', requireAdmin, async (req, res) => {
-  const eventId = req.params.id;
-  
+  const eventId = Number(req.params.id);
   try {
-    await db.run('UPDATE events SET ended_at = CURRENT_TIMESTAMP WHERE id = ?', [eventId]);
+    const db = getDb();
+    const events = await db.all('SELECT * FROM events');
+    const event = events.find(e => e.id === eventId);
+    if (!event) {
+      return res.status(404).json({ error: 'Event not found' });
+    }
+    event.ended_at = new Date().toISOString();
+    db._save();
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Database error' });
   }
 });
 
-// Admin: Get event results
+// Admin: Get event results (leaderboard)
 app.get('/api/admin/results/:id', requireAdmin, async (req, res) => {
-  const eventId = req.params.id;
-  
+  const eventId = Number(req.params.id);
   try {
-    const results = await db.all(`
-      SELECT u.username, 
-             COUNT(pr.id) * 10 as points,
-             COUNT(CASE WHEN pr.type = 'bar' THEN 1 END) as bars_completed,
-             COUNT(CASE WHEN pr.type = 'goal' THEN 1 END) as goals_completed
-      FROM participants p
-      JOIN users u ON p.user_id = u.id
-      LEFT JOIN progress pr ON p.id = pr.participant_id
-      WHERE p.event_id = ?
-      GROUP BY p.id, u.username
-      ORDER BY points DESC, u.username
-    `, [eventId]);
-    
+    const db = getDb();
+    const participants = (await db.all('SELECT * FROM participants')).filter(p => p.event_id === eventId);
+    const users = await db.all('SELECT * FROM users');
+    const progress = await db.all('SELECT * FROM progress');
+    const results = participants.map(p => {
+      const user = users.find(u => u.id === p.user_id);
+      const userProgress = progress.filter(pr => pr.participant_id === p.id);
+      const bars_completed = userProgress.filter(pr => pr.type === 'bar').length;
+      const goals_completed = userProgress.filter(pr => pr.type === 'goal').length;
+      const points = (bars_completed + goals_completed) * 10;
+      return {
+        username: user ? user.username : 'Unknown',
+        points,
+        bars_completed,
+        goals_completed
+      };
+    });
+    results.sort((a, b) => b.points - a.points || a.username.localeCompare(b.username));
     res.json(results);
   } catch (error) {
     res.status(500).json({ error: 'Database error' });
@@ -287,22 +306,26 @@ app.get('/api/admin/results/:id', requireAdmin, async (req, res) => {
 
 // Get event results (for all users)
 app.get('/api/events/:id/results', requireAuth, async (req, res) => {
-  const eventId = req.params.id;
-  
+  const eventId = Number(req.params.id);
   try {
-    const results = await db.all(`
-      SELECT u.username, 
-             COUNT(pr.id) * 10 as points,
-             COUNT(CASE WHEN pr.type = 'bar' THEN 1 END) as bars_completed,
-             COUNT(CASE WHEN pr.type = 'goal' THEN 1 END) as goals_completed
-      FROM participants p
-      JOIN users u ON p.user_id = u.id
-      LEFT JOIN progress pr ON p.id = pr.participant_id
-      WHERE p.event_id = ?
-      GROUP BY p.id, u.username
-      ORDER BY points DESC, u.username
-    `, [eventId]);
-    
+    const db = getDb();
+    const participants = (await db.all('SELECT * FROM participants')).filter(p => p.event_id === eventId);
+    const users = await db.all('SELECT * FROM users');
+    const progress = await db.all('SELECT * FROM progress');
+    const results = participants.map(p => {
+      const user = users.find(u => u.id === p.user_id);
+      const userProgress = progress.filter(pr => pr.participant_id === p.id);
+      const bars_completed = userProgress.filter(pr => pr.type === 'bar').length;
+      const goals_completed = userProgress.filter(pr => pr.type === 'goal').length;
+      const points = (bars_completed + goals_completed) * 10;
+      return {
+        username: user ? user.username : 'Unknown',
+        points,
+        bars_completed,
+        goals_completed
+      };
+    });
+    results.sort((a, b) => b.points - a.points || a.username.localeCompare(b.username));
     res.json(results);
   } catch (error) {
     res.status(500).json({ error: 'Database error' });

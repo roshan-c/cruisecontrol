@@ -1,0 +1,376 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "admin",
+      "points": 0,
+      "is_admin": true
+    },
+    {
+      "id": 2,
+      "username": "roshan"
+    }
+  ],
+  "events": [
+  ],
+  "participants": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "event_id": 1
+    },
+    {
+      "id": 2,
+      "user_id": 2,
+      "event_id": 1
+    }
+  ],
+  "progress": [
+    {
+      "id": 1,
+      "participant_id": 1,
+      "type": "bar",
+      "item_name": "Bow & Stern Pub"
+    },
+    {
+      "id": 2,
+      "participant_id": 1,
+      "type": "bar",
+      "item_name": "Pesky Parrot"
+    },
+    {
+      "id": 3,
+      "participant_id": 1,
+      "type": "bar",
+      "item_name": "Vintages Wine & Tapas Bar"
+    },
+    {
+      "id": 4,
+      "participant_id": 1,
+      "type": "goal",
+      "item_name": "Get someone to buy you a drink"
+    },
+    {
+      "id": 5,
+      "participant_id": 1,
+      "type": "goal",
+      "item_name": "Create a new cocktail name and have the bartender make it"
+    },
+    {
+      "id": 6,
+      "participant_id": 1,
+      "type": "goal",
+      "item_name": "Take a selfie with the bartender"
+    },
+    {
+      "id": 7,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "Bow & Stern Pub"
+    },
+    {
+      "id": 8,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "Dazzles"
+    },
+    {
+      "id": 9,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "Boleros"
+    },
+    {
+      "id": 10,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "Crown Lounge"
+    },
+    {
+      "id": 11,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "Casino Royale Bar"
+    },
+    {
+      "id": 12,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "Blaze"
+    },
+    {
+      "id": 13,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "On Air"
+    },
+    {
+      "id": 14,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "Pesky Parrot"
+    },
+    {
+      "id": 15,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "Playmakers Sports Bar & Arcade"
+    },
+    {
+      "id": 16,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "Schooner Bar"
+    },
+    {
+      "id": 17,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "Rising Tide Bar"
+    },
+    {
+      "id": 18,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "Suite Lounge"
+    },
+    {
+      "id": 19,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "The Lime & Coconut"
+    },
+    {
+      "id": 20,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "The Mason Jar Bar"
+    },
+    {
+      "id": 21,
+      "participant_id": 2,
+      "type": "bar",
+      "item_name": "Solarium Bar"
+    },
+    {
+      "id": 22,
+      "participant_id": 2,
+      "type": "goal",
+      "item_name": "Get someone to buy you a drink"
+    },
+    {
+      "id": 23,
+      "participant_id": 2,
+      "type": "goal",
+      "item_name": "Get a bartender to tell you their best pickup line"
+    },
+    {
+      "id": 24,
+      "participant_id": 2,
+      "type": "goal",
+      "item_name": "Get a stranger to give you a nickname"
+    },
+    {
+      "id": 25,
+      "participant_id": 2,
+      "type": "goal",
+      "item_name": "Find someone wearing the same shirt color as you"
+    },
+    {
+      "id": 26,
+      "participant_id": 2,
+      "type": "goal",
+      "item_name": "Down your drink in under 15 seconds"
+    },
+    {
+      "id": 27,
+      "participant_id": 2,
+      "type": "goal",
+      "item_name": "Compliment three different people"
+    },
+    {
+      "id": 28,
+      "participant_id": 2,
+      "type": "goal",
+      "item_name": "Ask the bartender to recommend their favorite drink"
+    },
+    {
+      "id": 29,
+      "participant_id": 2,
+      "type": "goal",
+      "item_name": "Dance on the bar counter"
+    },
+    {
+      "id": 30,
+      "participant_id": 2,
+      "type": "goal",
+      "item_name": "Create a new cocktail name and have the bartender make it"
+    },
+    {
+      "id": 31,
+      "participant_id": 2,
+      "type": "goal",
+      "item_name": "Finish your drink standing on one foot"
+    }
+  ],
+  "bars": [
+    {
+      "id": 1,
+      "name": "Blaze"
+    },
+    {
+      "id": 2,
+      "name": "Boleros"
+    },
+    {
+      "id": 3,
+      "name": "Bow & Stern Pub"
+    },
+    {
+      "id": 4,
+      "name": "Suite Lounge"
+    },
+    {
+      "id": 5,
+      "name": "Casino Royale Bar"
+    },
+    {
+      "id": 6,
+      "name": "Dazzles"
+    },
+    {
+      "id": 7,
+      "name": "Crown Lounge"
+    },
+    {
+      "id": 8,
+      "name": "The Lime & Coconut"
+    },
+    {
+      "id": 9,
+      "name": "The Mason Jar Bar"
+    },
+    {
+      "id": 10,
+      "name": "On Air"
+    },
+    {
+      "id": 11,
+      "name": "Pesky Parrot"
+    },
+    {
+      "id": 12,
+      "name": "Playmakers Sports Bar & Arcade"
+    },
+    {
+      "id": 13,
+      "name": "Rising Tide Bar"
+    },
+    {
+      "id": 14,
+      "name": "Schooner Bar"
+    },
+    {
+      "id": 15,
+      "name": "Solarium Bar"
+    },
+    {
+      "id": 16,
+      "name": "Trellis Bar"
+    },
+    {
+      "id": 17,
+      "name": "Vintages Wine & Tapas Bar"
+    },
+    {
+      "id": 18,
+      "name": "Wipe Out Bar"
+    }
+  ],
+  "goals": [
+    {
+      "id": 1,
+      "name": "Down your drink in under 15 seconds"
+    },
+    {
+      "id": 2,
+      "name": "Order a drink in another language"
+    },
+    {
+      "id": 3,
+      "name": "Take a selfie with the bartender"
+    },
+    {
+      "id": 4,
+      "name": "Finish your drink standing on one foot"
+    },
+    {
+      "id": 5,
+      "name": "Order the opposite color drink to what you usually have"
+    },
+    {
+      "id": 6,
+      "name": "Order the same color drink as someone else at the bar"
+    },
+    {
+      "id": 7,
+      "name": "Share a story about Frank Sinatra with the bartender"
+    },
+    {
+      "id": 8,
+      "name": "Order using only gestures (no words)"
+    },
+    {
+      "id": 9,
+      "name": "Ask the bartender to recommend their favorite drink"
+    },
+    {
+      "id": 10,
+      "name": "Get someone to buy you a drink"
+    },
+    {
+      "id": 11,
+      "name": "Compliment three different people"
+    },
+    {
+      "id": 12,
+      "name": "Sing karaoke"
+    },
+    {
+      "id": 13,
+      "name": "Dance on the bar counter"
+    },
+    {
+      "id": 14,
+      "name": "Find someone wearing the same shirt color as you"
+    },
+    {
+      "id": 15,
+      "name": "Take a group photo (this counts for everyone in the photo)"
+    },
+    {
+      "id": 16,
+      "name": "Order a drink you've never tried before"
+    },
+    {
+      "id": 17,
+      "name": "Get a bartender to tell you their best pickup line"
+    },
+    {
+      "id": 18,
+      "name": "High-five 10 different people"
+    },
+    {
+      "id": 19,
+      "name": "Create a new cocktail name and have the bartender make it"
+    },
+    {
+      "id": 20,
+      "name": "Get a stranger to give you a nickname"
+    },
+    {
+      "id": 21,
+      "name": "Take a shot without using your hands"
+    }
+  ]
+}
